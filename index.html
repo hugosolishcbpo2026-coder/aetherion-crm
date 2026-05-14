@@ -1,0 +1,2083 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>AETHERION — AI Business Operating System</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --black:#050505;--dark:#0f0f0f;--card:#1a1a1a;--card2:#222;
+  --gold:#C8A96B;--gold2:#e8c98b;--gold3:#9a7a3a;
+  --ivory:#F5F1E8;--muted:#a8a8a8;--dim:rgba(245,241,232,0.5);
+  --emerald:#16866F;--ruby:#B02840;--blue:#3B82F6;
+  --border:rgba(255,255,255,0.08);--border-gold:rgba(200,169,107,0.25);
+  --sidebar:240px;--topbar:56px;
+  --r:8px;--r2:12px;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--black);color:var(--ivory);min-height:100vh;overflow-x:hidden}
+a,button{cursor:pointer}
+/* ─ Scrollbar ─ */
+::-webkit-scrollbar{width:3px;height:3px}
+::-webkit-scrollbar-thumb{background:rgba(200,169,107,0.3);border-radius:2px}
+/* ─ Grid bg ─ */
+body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(circle,rgba(200,169,107,0.03) 1px,transparent 1px);background-size:28px 28px;pointer-events:none;z-index:0}
+
+/* ═══ LOGIN ═══ */
+#login{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;background:var(--black)}
+.login-orb{position:absolute;border-radius:50%;filter:blur(120px);pointer-events:none}
+.orb1{width:500px;height:500px;background:rgba(200,169,107,0.12);top:-150px;left:-150px}
+.orb2{width:400px;height:400px;background:rgba(176,40,64,0.1);bottom:-100px;right:-100px}
+.login-card{position:relative;z-index:1;width:420px;background:rgba(15,15,15,0.9);border:1px solid var(--border-gold);border-radius:20px;padding:36px;backdrop-filter:blur(40px);box-shadow:0 0 80px rgba(200,169,107,0.08),0 40px 80px rgba(0,0,0,0.5)}
+.login-logo{text-align:center;margin-bottom:28px}
+.logo-hex{width:60px;height:60px;background:linear-gradient(135deg,#C8A96B,#9a7a3a);border-radius:14px;display:inline-flex;align-items:center;justify-content:center;font-size:26px;color:var(--black);margin-bottom:14px;box-shadow:0 0 40px rgba(200,169,107,0.25)}
+.logo-name{font-size:24px;font-weight:700;color:var(--ivory);letter-spacing:4px}
+.logo-sub{font-size:10px;color:var(--gold);letter-spacing:3px;text-transform:uppercase;margin-top:4px}
+.org-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:18px}
+.org-btn{padding:12px;border-radius:var(--r);border:1px solid var(--border);background:transparent;color:var(--ivory);text-align:center;cursor:pointer;transition:all .2s}
+.org-btn:hover,.org-btn.active{border-color:var(--gold);background:rgba(200,169,107,0.08)}
+.org-icon{font-size:20px;display:block;margin-bottom:4px}
+.org-name{font-size:12px;font-weight:600}
+.org-type{font-size:10px;color:var(--muted)}
+.fi{margin-bottom:12px}
+.fi label{display:block;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.fi input{width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:var(--r);padding:10px 12px;color:var(--ivory);font-size:13px}
+.fi input:focus{outline:none;border-color:var(--gold)}
+.btn-login{width:100%;padding:12px;background:linear-gradient(135deg,#C8A96B,#9a7a3a);color:var(--black);border:none;border-radius:var(--r);font-size:13px;font-weight:700;letter-spacing:1px;cursor:pointer;transition:all .2s;margin-top:4px}
+.btn-login:hover{filter:brightness(1.1);transform:translateY(-1px)}
+.login-tabs{display:flex;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:var(--r);padding:3px;margin-bottom:18px}
+.ltab{flex:1;padding:7px;text-align:center;font-size:11px;font-weight:600;cursor:pointer;border-radius:6px;color:var(--muted);transition:all .2s}
+.ltab.active{background:rgba(200,169,107,0.15);color:var(--gold)}
+.social-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.social-btn{display:flex;align-items:center;justify-content:center;gap:7px;padding:9px;border-radius:var(--r);background:transparent;border:1px solid var(--border);color:var(--ivory);font-size:12px;cursor:pointer;transition:all .2s}
+.social-btn:hover{border-color:var(--border-gold);background:rgba(255,255,255,0.04)}
+.divider-line{display:flex;align-items:center;gap:10px;margin:12px 0;font-size:10px;color:var(--muted)}
+.divider-line::before,.divider-line::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* ═══ APP ═══ */
+#app{display:none;position:relative;z-index:1;height:100vh;overflow:hidden}
+.layout{display:flex;height:100vh}
+
+/* ─ Sidebar ─ */
+.sidebar{width:var(--sidebar);min-width:var(--sidebar);height:100vh;background:rgba(8,8,8,0.9);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden}
+.sidebar::-webkit-scrollbar{width:2px}
+.sb-header{padding:14px;border-bottom:1px solid var(--border)}
+.sb-logo{display:flex;align-items:center;gap:8px}
+.sb-logo-mark{width:30px;height:30px;background:linear-gradient(135deg,#C8A96B,#9a7a3a);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--black);flex-shrink:0}
+.sb-brand{font-size:13px;font-weight:700;color:var(--ivory);letter-spacing:2px}
+.sb-sub{font-size:9px;color:var(--gold);letter-spacing:2px}
+.sb-org{margin:10px;padding:10px 12px;background:rgba(200,169,107,0.06);border:1px solid var(--border-gold);border-radius:var(--r);cursor:pointer;transition:all .2s}
+.sb-org:hover{background:rgba(200,169,107,0.1)}
+.sb-org-name{font-size:12px;font-weight:600;color:var(--gold)}
+.sb-org-type{font-size:10px;color:var(--muted);margin-top:1px}
+.sb-section{padding:6px 14px 2px;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2);margin-top:6px}
+.nav-item{display:flex;align-items:center;gap:9px;padding:9px 12px;margin:1px 8px;border-radius:var(--r);cursor:pointer;transition:all .2s;border:1px solid transparent;text-decoration:none}
+.nav-item:hover{background:rgba(255,255,255,0.04)}
+.nav-item.active{background:rgba(200,169,107,0.1);border-color:rgba(200,169,107,0.2)}
+.nav-icon{font-size:15px;width:18px;text-align:center;flex-shrink:0}
+.nav-label{font-size:12px;font-weight:500;color:var(--muted)}
+.nav-item.active .nav-label,.nav-item:hover .nav-label{color:var(--ivory)}
+.nav-item.active .nav-icon{filter:sepia(1) saturate(3) hue-rotate(5deg)}
+.nav-badge{margin-left:auto;background:rgba(200,169,107,0.15);color:var(--gold);font-size:9px;font-weight:700;padding:1px 6px;border-radius:8px}
+.nav-badge-red{background:rgba(248,113,113,0.15);color:#f87171}
+.sb-footer{margin-top:auto;padding:12px;border-top:1px solid var(--border)}
+.sb-user{display:flex;align-items:center;gap:8px;padding:8px;border-radius:var(--r);cursor:pointer;transition:all .2s}
+.sb-user:hover{background:rgba(255,255,255,0.04)}
+.sb-user-name{font-size:12px;font-weight:600;color:var(--ivory)}
+.sb-user-role{font-size:10px;color:var(--gold)}
+
+/* ─ Main ─ */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{height:var(--topbar);background:rgba(5,5,5,0.8);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:12px;flex-shrink:0;backdrop-filter:blur(20px)}
+.topbar-title{font-size:15px;font-weight:600;color:var(--ivory)}
+.topbar-crumb{font-size:11px;color:var(--muted)}
+.topbar-crumb span{color:var(--gold)}
+.topbar-right{display:flex;align-items:center;gap:8px;margin-left:auto}
+.search-box{background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:var(--r);padding:6px 10px 6px 30px;color:var(--ivory);font-size:12px;width:200px;position:relative}
+.search-wrap{position:relative}
+.search-wrap::before{content:'🔍';position:absolute;left:8px;top:50%;transform:translateY(-50%);font-size:11px;pointer-events:none}
+.search-box:focus{outline:none;border-color:var(--gold)}
+.ai-btn{display:flex;align-items:center;gap:5px;padding:5px 12px;border-radius:var(--r);background:rgba(200,169,107,0.08);border:1px solid var(--border-gold);color:var(--gold);font-size:11px;font-weight:600;cursor:pointer;transition:all .2s}
+.ai-btn:hover,.ai-btn.active{background:rgba(200,169,107,0.15)}
+.ai-dot{width:6px;height:6px;background:var(--gold);border-radius:50%;animation:blink 1.5s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+.icon-btn{width:34px;height:34px;display:flex;align-items:center;justify-content:center;border-radius:var(--r);background:rgba(255,255,255,0.04);border:1px solid var(--border);color:var(--muted);cursor:pointer;transition:all .2s;position:relative;font-size:15px}
+.icon-btn:hover{border-color:var(--border-gold);color:var(--gold)}
+.notif-dot-red{position:absolute;top:5px;right:5px;width:7px;height:7px;background:#f87171;border-radius:50%;border:1.5px solid var(--black)}
+.av{border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;flex-shrink:0;cursor:pointer}
+.av-sm{width:26px;height:26px}
+.av-md{width:34px;height:34px;font-size:13px}
+.av-lg{width:42px;height:42px;font-size:16px}
+.av-xl{width:52px;height:52px;font-size:20px}
+.av-gold{background:linear-gradient(135deg,#C8A96B,#9a7a3a);color:var(--black)}
+.av-ruby{background:linear-gradient(135deg,#7A1E2C,#B02840);color:var(--ivory)}
+.av-blue{background:linear-gradient(135deg,#1e40af,#3b82f6);color:var(--ivory)}
+.av-green{background:linear-gradient(135deg,#0F5C4D,#16866F);color:var(--ivory)}
+.av-purple{background:linear-gradient(135deg,#5B21B6,#7C3AED);color:var(--ivory)}
+.av-gray{background:linear-gradient(135deg,#374151,#6B7280);color:var(--ivory)}
+.content{flex:1;overflow-y:auto;padding:20px}
+.page{display:none;animation:fadein .3s ease}
+.page.active{display:block}
+@keyframes fadein{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ─ AI Sidebar ─ */
+.ai-panel{width:0;min-width:0;overflow:hidden;border-left:0 solid var(--border);background:rgba(5,5,5,0.9);display:flex;flex-direction:column;transition:all .3s;backdrop-filter:blur(20px)}
+.ai-panel.open{width:310px;min-width:310px;border-left-width:1px}
+.ai-panel-header{padding:12px 14px;border-bottom:1px solid var(--border);flex-shrink:0}
+.ai-panel-title{font-size:12px;font-weight:700;color:var(--gold);letter-spacing:1px;display:flex;align-items:center;gap:6px}
+.ai-panel-sub{font-size:10px;color:rgba(52,211,153,0.8);margin-top:2px;display:flex;align-items:center;gap:4px}
+.ai-mode-row{display:flex;gap:3px;padding:7px;border-bottom:1px solid var(--border);flex-wrap:wrap;flex-shrink:0}
+.ai-mode{padding:4px 8px;border-radius:4px;font-size:10px;font-weight:600;cursor:pointer;color:var(--muted);background:transparent;border:none;transition:all .15s}
+.ai-mode.active{background:rgba(200,169,107,0.15);color:var(--gold)}
+.ai-msgs{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:8px}
+.ai-msg{max-width:87%}
+.ai-msg.bot{align-self:flex-start}
+.ai-msg.user{align-self:flex-end}
+.ai-bubble{padding:8px 11px;border-radius:9px;font-size:11px;line-height:1.5}
+.ai-msg.bot .ai-bubble{background:rgba(200,169,107,0.07);border:1px solid rgba(200,169,107,0.15);color:var(--ivory)}
+.ai-msg.user .ai-bubble{background:rgba(200,169,107,0.15);border:1px solid rgba(200,169,107,0.3);color:var(--ivory)}
+.ai-chips{display:flex;gap:4px;flex-wrap:wrap;padding:6px 10px;border-top:1px solid var(--border);flex-shrink:0}
+.ai-chip{padding:3px 8px;border-radius:10px;font-size:10px;border:1px solid rgba(200,169,107,0.2);color:var(--gold);background:transparent;cursor:pointer;transition:all .15s}
+.ai-chip:hover{background:rgba(200,169,107,0.1)}
+.ai-input-row{display:flex;gap:5px;padding:8px;border-top:1px solid var(--border);flex-shrink:0}
+.ai-ta{flex:1;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:var(--r);padding:7px 10px;color:var(--ivory);font-size:12px;resize:none;min-height:34px;max-height:80px;overflow-y:auto;font-family:inherit}
+.ai-ta:focus{outline:none;border-color:var(--border-gold)}
+.ai-ta::placeholder{color:rgba(255,255,255,0.2)}
+.ai-send{width:34px;height:34px;background:linear-gradient(135deg,#C8A96B,#9a7a3a);border:none;border-radius:var(--r);color:var(--black);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s}
+.ai-send:hover{filter:brightness(1.1)}
+
+/* ─ Components ─ */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r2)}
+.card-hover{transition:all .2s;cursor:pointer}
+.card-hover:hover{border-color:var(--border-gold);transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,0,0,0.3)}
+.badge{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:12px;font-size:10px;font-weight:600;white-space:nowrap}
+.b-gold{background:rgba(200,169,107,0.15);color:var(--gold);border:.5px solid rgba(200,169,107,0.3)}
+.b-green{background:rgba(22,134,111,0.2);color:#34D399;border:.5px solid rgba(22,134,111,0.4)}
+.b-red{background:rgba(176,40,64,0.2);color:#f87171;border:.5px solid rgba(176,40,64,0.4)}
+.b-blue{background:rgba(59,130,246,0.15);color:#93c5fd;border:.5px solid rgba(59,130,246,0.3)}
+.b-gray{background:rgba(168,168,168,0.1);color:var(--muted);border:.5px solid rgba(168,168,168,0.2)}
+.b-purple{background:rgba(124,58,237,0.15);color:#c4b5fd;border:.5px solid rgba(124,58,237,0.3)}
+.dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.dot-green{background:#34D399;box-shadow:0 0 5px rgba(52,211,153,0.4)}
+.dot-gold{background:var(--gold)}
+.dot-red{background:#f87171}
+.dot-gray{background:var(--muted)}
+.progress{height:4px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden}
+.progress-fill{height:100%;border-radius:2px}
+.p-gold{background:linear-gradient(90deg,#C8A96B,#e8c98b)}
+.p-green{background:linear-gradient(90deg,#0F5C4D,#16866F)}
+.tag{display:inline-flex;align-items:center;padding:2px 7px;border-radius:10px;font-size:9px;font-weight:600;background:rgba(255,255,255,0.05);border:.5px solid var(--border);color:var(--muted)}
+
+/* ─ Buttons ─ */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:var(--r);font-size:11px;font-weight:600;letter-spacing:.3px;cursor:pointer;transition:all .2s;border:none;white-space:nowrap;font-family:inherit}
+.btn:hover{transform:translateY(-1px)}
+.btn-gold{background:linear-gradient(135deg,#C8A96B,#9a7a3a);color:var(--black)}
+.btn-gold:hover{filter:brightness(1.1);box-shadow:0 4px 20px rgba(200,169,107,0.25)}
+.btn-ghost{background:transparent;color:var(--gold);border:1px solid var(--border-gold)}
+.btn-ghost:hover{background:rgba(200,169,107,0.08)}
+.btn-glass{background:rgba(255,255,255,0.04);color:var(--ivory);border:1px solid var(--border)}
+.btn-glass:hover{background:rgba(255,255,255,0.07);border-color:rgba(255,255,255,0.12)}
+.btn-sm{padding:4px 10px;font-size:10px}
+.btn-ruby{background:linear-gradient(135deg,#7A1E2C,#B02840);color:var(--ivory)}
+
+/* ─ Input ─ */
+.input{width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:var(--r);padding:8px 12px;color:var(--ivory);font-size:12px;font-family:inherit;transition:border-color .2s}
+.input:focus{outline:none;border-color:var(--gold)}
+.input::placeholder{color:rgba(255,255,255,0.2)}
+.select{width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:var(--r);padding:8px 12px;color:var(--ivory);font-size:12px;font-family:inherit;cursor:pointer}
+.select:focus{outline:none;border-color:var(--gold)}
+.select option{background:#1a1a1a}
+.input-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.input-group{margin-bottom:12px}
+.input-group label{display:block;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+
+/* ─ Table ─ */
+.table{width:100%;border-collapse:collapse}
+.table th{text-align:left;padding:9px 12px;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border);background:rgba(255,255,255,0.01)}
+.table td{padding:10px 12px;font-size:12px;color:rgba(245,241,232,0.8);border-bottom:1px solid rgba(255,255,255,0.03);vertical-align:middle}
+.table tr:hover td{background:rgba(200,169,107,0.03);cursor:pointer}
+.table td:first-child,.table th:first-child{padding-left:16px}
+.row-actions{display:flex;gap:4px;opacity:0;transition:opacity .2s}
+.table tr:hover .row-actions{opacity:1}
+.act-btn{width:26px;height:26px;display:flex;align-items:center;justify-content:center;border-radius:5px;background:rgba(255,255,255,0.05);border:1px solid var(--border);color:var(--muted);cursor:pointer;font-size:12px;transition:all .15s}
+.act-btn:hover{color:var(--gold);border-color:var(--border-gold)}
+
+/* ─ KPI Cards ─ */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.kpi{background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:18px;position:relative;overflow:hidden;transition:all .2s}
+.kpi:hover{border-color:var(--border-gold);transform:translateY(-2px)}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(200,169,107,0.4),transparent);opacity:0;transition:opacity .2s}
+.kpi:hover::before{opacity:1}
+.kpi-icon{position:absolute;right:14px;top:14px;width:36px;height:36px;border-radius:var(--r);display:flex;align-items:center;justify-content:center;font-size:16px}
+.kpi-label{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.kpi-value{font-size:26px;font-weight:700;color:var(--ivory);margin-bottom:5px}
+.kpi-delta{font-size:11px;display:flex;align-items:center;gap:3px}
+.delta-up{color:#34D399}.delta-down{color:#f87171}
+
+/* ─ Kanban ─ */
+.kanban{display:flex;gap:12px;overflow-x:auto;height:calc(100vh - 200px);padding-bottom:8px}
+.kanban::-webkit-scrollbar{height:3px}
+.k-col{min-width:240px;width:240px;display:flex;flex-direction:column;flex-shrink:0}
+.k-head{padding:10px 12px;border-radius:var(--r2);background:var(--card);border:1px solid var(--border);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
+.k-head-title{font-size:12px;font-weight:700}
+.k-count{font-size:10px;padding:2px 6px;border-radius:8px;font-weight:700}
+.k-body{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:7px}
+.k-body::-webkit-scrollbar{width:2px}
+.k-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:11px;cursor:grab;transition:all .2s;position:relative}
+.k-card:hover{border-color:var(--border-gold);transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,0,0,0.3)}
+.k-card:active{cursor:grabbing}
+.k-card.dragging{opacity:.4;transform:rotate(2deg)}
+.k-priority{position:absolute;top:9px;right:9px;width:7px;height:7px;border-radius:50%}
+.k-title{font-size:12px;font-weight:600;color:var(--ivory);margin-bottom:3px;padding-right:14px}
+.k-company{font-size:10px;color:var(--muted);margin-bottom:8px}
+.k-footer{display:flex;align-items:center;justify-content:space-between}
+.k-value{font-size:12px;font-weight:700;color:var(--gold)}
+.k-days{font-size:10px;color:var(--muted)}
+.k-add{width:100%;padding:7px;border-radius:var(--r);background:transparent;border:1px dashed rgba(255,255,255,0.08);color:var(--muted);font-size:11px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:5px;font-family:inherit}
+.k-add:hover{border-color:var(--border-gold);color:var(--gold)}
+
+/* ─ Tasks ─ */
+.task-item{display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:var(--r);background:var(--card);border:1px solid var(--border);margin-bottom:5px;transition:all .2s}
+.task-item:hover{border-color:var(--border-gold)}
+.task-check{width:17px;height:17px;min-width:17px;border-radius:4px;border:1.5px solid var(--muted);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;font-size:9px}
+.task-check.done{background:var(--emerald);border-color:var(--emerald);color:#fff}
+.task-title{flex:1;font-size:12px;color:var(--ivory)}
+.task-title.done{text-decoration:line-through;color:var(--muted)}
+.task-due{font-size:10px;font-family:monospace}
+.due-over{color:#f87171}.due-today{color:var(--gold)}.due-soon{color:var(--muted)}
+.p-bar{width:5px;height:20px;border-radius:3px;flex-shrink:0}
+.p-high{background:#f87171}.p-med{background:var(--gold)}.p-low{background:#93c5fd}
+
+/* ─ Timeline ─ */
+.tl{display:flex;flex-direction:column}
+.tl-item{display:flex;gap:10px;padding-bottom:14px;position:relative}
+.tl-item:last-child{padding-bottom:0}
+.tl-line{position:absolute;left:13px;top:27px;bottom:0;width:1px;background:var(--border)}
+.tl-item:last-child .tl-line{display:none}
+.tl-dot{width:26px;height:26px;min-width:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;position:relative;z-index:1;flex-shrink:0}
+.tl-content{flex:1;padding-top:2px}
+.tl-title{font-size:12px;font-weight:600;color:var(--ivory)}
+.tl-meta{font-size:10px;color:var(--muted);margin-top:1px}
+
+/* ─ Contact Drawer ─ */
+.drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;display:none;backdrop-filter:blur(3px)}
+.drawer{position:fixed;right:0;top:0;bottom:0;width:460px;background:rgba(10,10,10,0.98);border-left:1px solid var(--border-gold);z-index:201;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .3s ease}
+.drawer.open{transform:translateX(0)}
+.drawer-head{padding:16px 18px;border-bottom:1px solid var(--border);flex-shrink:0}
+.drawer-tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0;padding:0 18px}
+.dtab{padding:9px 12px;font-size:11px;font-weight:600;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;transition:all .2s}
+.dtab.active{color:var(--gold);border-bottom-color:var(--gold)}
+.drawer-body{flex:1;overflow-y:auto;padding:18px}
+.drawer-footer{padding:12px 16px;border-top:1px solid var(--border);display:flex;gap:7px;flex-shrink:0}
+
+/* ─ Modal ─ */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:300;display:none;align-items:center;justify-content:center;backdrop-filter:blur(6px)}
+.modal-overlay.open{display:flex}
+.modal{background:rgba(12,12,12,0.98);border:1px solid var(--border-gold);border-radius:16px;padding:24px;width:460px;max-width:90vw;max-height:85vh;overflow-y:auto;box-shadow:0 0 60px rgba(200,169,107,0.08),0 40px 80px rgba(0,0,0,0.5);position:relative}
+.modal-title{font-size:17px;font-weight:700;color:var(--ivory);margin-bottom:4px}
+.modal-sub{font-size:12px;color:var(--muted);margin-bottom:20px}
+.modal-x{position:absolute;right:18px;top:18px;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:6px;background:rgba(255,255,255,0.04);border:1px solid var(--border);color:var(--muted);cursor:pointer;font-size:15px}
+.modal-x:hover{color:var(--ivory)}
+
+/* ─ Notifications panel ─ */
+.notif-panel{position:absolute;right:14px;top:60px;width:330px;background:rgba(10,10,10,0.98);border:1px solid var(--border);border-radius:var(--r2);z-index:50;display:none;box-shadow:0 16px 40px rgba(0,0,0,0.4);backdrop-filter:blur(20px)}
+.notif-panel.open{display:block}
+.notif-head{padding:11px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:600}
+.notif-item{display:flex;gap:9px;padding:11px 14px;border-bottom:1px solid rgba(255,255,255,0.03);cursor:pointer;transition:background .15s}
+.notif-item:hover{background:rgba(255,255,255,0.03)}
+.notif-item.unread{background:rgba(200,169,107,0.04)}
+.notif-ndot{width:6px;height:6px;background:var(--gold);border-radius:50%;margin-top:4px;flex-shrink:0}
+.notif-ndot.read{background:transparent}
+
+/* ─ Chart card ─ */
+.chart-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:16px}
+.chart-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px}
+.chart-title{font-size:13px;font-weight:600;color:var(--ivory)}
+.chart-sub{font-size:11px;color:var(--muted);margin-top:1px}
+.chart-wrap{position:relative}
+
+/* ─ Misc ─ */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.grid4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px}
+.flex{display:flex}.flex-col{flex-direction:column}.flex-1{flex:1}.flex-none{flex:none}
+.items-center{align-items:center}.items-start{align-items:flex-start}
+.justify-between{justify-content:space-between}.justify-center{justify-content:center}.justify-end{justify-content:flex-end}
+.gap-2{gap:8px}.gap-3{gap:12px}.gap-4{gap:16px}
+.mb-2{margin-bottom:8px}.mb-3{margin-bottom:12px}.mb-4{margin-bottom:16px}
+.mt-2{margin-top:8px}.mt-3{margin-top:12px}.mt-4{margin-top:16px}
+.ml-auto{margin-left:auto}
+.p-3{padding:12px}.p-4{padding:16px}.p-5{padding:20px}
+.w-full{width:100%}
+.text-xs{font-size:10px}.text-sm{font-size:12px}.text-md{font-size:14px}.text-lg{font-size:16px}.text-xl{font-size:20px}
+.text-gold{color:var(--gold)}.text-muted{color:var(--muted)}.text-ivory{color:var(--ivory)}
+.font-bold{font-weight:700}.font-semi{font-weight:600}.font-med{font-weight:500}
+.tracking-wide{letter-spacing:1px}.tracking-wider{letter-spacing:2px}
+.upper{text-transform:uppercase}
+.truncate{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.divider{width:100%;height:1px;background:var(--border);margin:10px 0}
+.empty{text-align:center;padding:32px 16px;color:var(--muted)}
+.empty-icon{font-size:36px;margin-bottom:10px;opacity:.4}
+@media(max-width:900px){
+  .sidebar{display:none}
+  .ai-panel{display:none}
+  .kpi-grid{grid-template-columns:1fr 1fr}
+  .grid3,.grid4{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- ════ LOGIN ════ -->
+<div id="login">
+  <div class="login-orb orb1"></div>
+  <div class="login-orb orb2"></div>
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="logo-hex">⬡</div>
+      <div class="logo-name">AETHERION</div>
+      <div class="logo-sub">AI Business Operating System</div>
+    </div>
+
+    <div style="margin-bottom:14px">
+      <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:7px">SELECT ORGANIZATION</div>
+      <div class="org-grid">
+        <div class="org-btn active" id="org1" onclick="selectOrg(1)">
+          <span class="org-icon">⚖️</span>
+          <div class="org-name">Notaría 322</div>
+          <div class="org-type">Legal Services</div>
+        </div>
+        <div class="org-btn" id="org2" onclick="selectOrg(2)">
+          <span class="org-icon">🏖️</span>
+          <div class="org-name">TropicCo</div>
+          <div class="org-type">Property Mgmt</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="login-tabs">
+      <div class="ltab active" id="ltab-email" onclick="switchLoginTab('email')">Email</div>
+      <div class="ltab" id="ltab-phone" onclick="switchLoginTab('phone')">Phone</div>
+      <div class="ltab" id="ltab-sso" onclick="switchLoginTab('sso')">SSO</div>
+    </div>
+
+    <div id="lform-email">
+      <div class="fi"><label>Email address</label><input type="email" id="l-email" value="admin@aetherion.ai" placeholder="admin@company.com"/></div>
+      <div class="fi"><label>Password</label><input type="password" id="l-pass" value="••••••••"/></div>
+      <button class="btn-login" onclick="doLogin()">ACCESS AETHERION</button>
+    </div>
+    <div id="lform-phone" style="display:none">
+      <div class="fi"><label>Phone number</label><input type="tel" placeholder="+1 (555) 000-0000"/></div>
+      <div class="fi"><label>PIN</label><input type="password" placeholder="6-digit PIN" maxlength="6"/></div>
+      <button class="btn-login" onclick="doLogin()">SEND OTP CODE</button>
+    </div>
+    <div id="lform-sso" style="display:none">
+      <div class="social-row">
+        <div class="social-btn" onclick="doLogin()">
+          <svg width="15" height="15" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+          Google
+        </div>
+        <div class="social-btn" onclick="doLogin()">
+          <svg width="15" height="15" viewBox="0 0 21 21"><path d="M0 0h10.5v10.5H0z" fill="#F25022"/><path d="M11 0h10v10.5H11z" fill="#7FBA00"/><path d="M0 11h10.5V21H0z" fill="#00A4EF"/><path d="M11 11h10v10H11z" fill="#FFB900"/></svg>
+          Microsoft
+        </div>
+      </div>
+      <button class="btn-login" onclick="doLogin()">CONTINUE WITH SSO</button>
+    </div>
+
+    <div style="text-align:center;margin-top:14px;font-size:10px;color:rgba(255,255,255,0.2)">
+      Protected by AETHERION Security Engine v2.0
+    </div>
+  </div>
+</div>
+
+<!-- ════ APP ════ -->
+<div id="app">
+<div class="layout">
+
+<!-- Sidebar -->
+<aside class="sidebar">
+  <div class="sb-header">
+    <div class="sb-logo">
+      <div class="sb-logo-mark">⬡</div>
+      <div>
+        <div class="sb-brand">AETHERION</div>
+        <div class="sb-sub">AI OS</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sb-org" onclick="showToast('Switching organization...')">
+    <div style="display:flex;align-items:center;gap:7px">
+      <span id="sb-icon" style="font-size:15px">⚖️</span>
+      <div style="flex:1;min-width:0">
+        <div class="sb-org-name truncate" id="sb-name">Notaría Pública 322</div>
+        <div class="sb-org-type" id="sb-type">Legal Services · Los Cabos</div>
+      </div>
+      <span style="font-size:11px;color:var(--muted)">⇅</span>
+    </div>
+  </div>
+
+  <div class="sb-section">CORE</div>
+  <div class="nav-item active" id="nav-dashboard" onclick="goPage('dashboard')"><span class="nav-icon">📊</span><span class="nav-label">Dashboard</span></div>
+  <div class="nav-item" id="nav-contacts" onclick="goPage('contacts')"><span class="nav-icon">👥</span><span class="nav-label">Contacts</span><span class="nav-badge">248</span></div>
+  <div class="nav-item" id="nav-pipeline" onclick="goPage('pipeline')"><span class="nav-icon">🔀</span><span class="nav-label">Pipeline</span><span class="nav-badge">32</span></div>
+  <div class="nav-item" id="nav-tasks" onclick="goPage('tasks')"><span class="nav-icon">✅</span><span class="nav-label">Tasks</span><span class="nav-badge nav-badge-red">7</span></div>
+
+  <div class="sb-section">OPERATIONS</div>
+  <div class="nav-item" id="nav-messages" onclick="goPage('messages')"><span class="nav-icon">💬</span><span class="nav-label">Messages</span><span class="nav-badge nav-badge-red">3</span></div>
+  <div class="nav-item" id="nav-documents" onclick="goPage('documents')"><span class="nav-icon">📁</span><span class="nav-label">Documents</span></div>
+  <div class="nav-item" id="nav-bookings" onclick="goPage('bookings')"><span class="nav-icon">📅</span><span class="nav-label">Bookings</span><span class="nav-badge">11</span></div>
+  <div class="nav-item" id="nav-automations" onclick="goPage('automations')"><span class="nav-icon">⚡</span><span class="nav-label">Automations</span></div>
+
+  <div class="sb-section">INTELLIGENCE</div>
+  <div class="nav-item" id="nav-analytics" onclick="goPage('analytics')"><span class="nav-icon">📈</span><span class="nav-label">Analytics</span></div>
+  <div class="nav-item" id="nav-ai" onclick="goPage('ai')"><span class="nav-icon">🧠</span><span class="nav-label">AI Center</span><span class="nav-badge">AI</span></div>
+
+  <div class="sb-section">SYSTEM</div>
+  <div class="nav-item" id="nav-team" onclick="goPage('team')"><span class="nav-icon">👤</span><span class="nav-label">Team</span></div>
+  <div class="nav-item" id="nav-settings" onclick="goPage('settings')"><span class="nav-icon">⚙️</span><span class="nav-label">Settings</span></div>
+
+  <div class="sb-footer">
+    <div class="sb-user">
+      <div class="av av-md av-gold">AR</div>
+      <div style="flex:1;min-width:0">
+        <div class="sb-user-name truncate">Alejandro Rios</div>
+        <div class="sb-user-role">Super Admin</div>
+      </div>
+      <div class="icon-btn" onclick="toggleAI()" title="AI" style="width:28px;height:28px;font-size:12px">🤖</div>
+    </div>
+  </div>
+</aside>
+
+<!-- Main Content -->
+<div class="main">
+  <!-- Topbar -->
+  <div class="topbar">
+    <div>
+      <div class="topbar-title" id="page-title">Dashboard</div>
+      <div class="topbar-crumb">AETHERION / <span id="page-crumb">Overview</span></div>
+    </div>
+    <div class="topbar-right">
+      <div class="search-wrap">
+        <input class="search-box input" placeholder="Search everything..." oninput="doSearch(this.value)" style="width:200px"/>
+      </div>
+      <div class="ai-btn" onclick="toggleAI()" id="ai-toggle-btn">
+        <div class="ai-dot"></div>
+        <span>MARINA AI</span>
+      </div>
+      <div class="icon-btn" onclick="toggleNotifs()" id="notif-toggle" style="position:relative">
+        🔔
+        <div class="notif-dot-red"></div>
+      </div>
+      <!-- Notification panel -->
+      <div class="notif-panel" id="notif-panel">
+        <div class="notif-head">
+          <span>Notifications</span>
+          <button class="btn btn-glass btn-sm" onclick="markAllRead()">Mark all read</button>
+        </div>
+        <div id="notif-list"></div>
+      </div>
+      <div class="av av-md av-gold" onclick="showToast('Profile menu coming soon')">AR</div>
+    </div>
+  </div>
+
+  <!-- Pages -->
+  <div class="content" id="page-content">
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div class="kpi-grid">
+        <div class="kpi">
+          <div class="kpi-icon" style="background:rgba(52,211,153,0.12)">💰</div>
+          <div class="kpi-label">Revenue MTD</div>
+          <div class="kpi-value">$284K</div>
+          <div class="kpi-delta delta-up">↑ 18.4% vs last month</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-icon" style="background:rgba(200,169,107,0.12)">🎯</div>
+          <div class="kpi-label">Active Deals</div>
+          <div class="kpi-value">32</div>
+          <div class="kpi-delta delta-up">↑ 5 new this week</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-icon" style="background:rgba(147,197,253,0.12)">👥</div>
+          <div class="kpi-label">Total Contacts</div>
+          <div class="kpi-value">248</div>
+          <div class="kpi-delta delta-up">↑ 12 this month</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-icon" style="background:rgba(196,181,253,0.12)">🏆</div>
+          <div class="kpi-label">Win Rate</div>
+          <div class="kpi-value">67.3%</div>
+          <div class="kpi-delta delta-up">↑ 3.2% vs Q3</div>
+        </div>
+      </div>
+
+      <div class="grid2 gap-3 mb-3">
+        <div class="chart-card">
+          <div class="chart-head">
+            <div><div class="chart-title">Revenue Trend</div><div class="chart-sub">Last 6 months</div></div>
+            <div style="display:flex;gap:5px">
+              <button class="btn btn-glass btn-sm">6M</button>
+              <button class="btn btn-glass btn-sm">1Y</button>
+            </div>
+          </div>
+          <div class="chart-wrap" style="height:190px"><canvas id="revChart"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-head">
+            <div><div class="chart-title">Pipeline Stages</div><div class="chart-sub">Active deal distribution</div></div>
+            <button class="btn btn-glass btn-sm" onclick="goPage('pipeline')">View all</button>
+          </div>
+          <div id="funnel-view"></div>
+        </div>
+      </div>
+
+      <div class="grid3 gap-3">
+        <div class="card p-4">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+            <div class="text-md font-semi">Recent Activity</div>
+            <button class="btn btn-glass btn-sm">All</button>
+          </div>
+          <div class="tl" id="dash-activity"></div>
+        </div>
+        <div class="card p-4">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+            <div class="text-md font-semi">Priority Tasks</div>
+            <button class="btn btn-glass btn-sm" onclick="goPage('tasks')">All tasks</button>
+          </div>
+          <div id="dash-tasks"></div>
+          <button class="btn btn-ghost btn-sm w-full" style="justify-content:center;margin-top:7px;width:100%" onclick="showModal('add-task')">+ Add task</button>
+        </div>
+        <div class="card p-4" style="border-color:var(--border-gold)">
+          <div style="display:flex;align-items:center;gap:7px;margin-bottom:12px">
+            <div class="ai-dot"></div>
+            <div class="text-md font-semi text-gold">AI Insights</div>
+            <span class="badge b-gold" style="margin-left:auto;font-size:9px">LIVE</span>
+          </div>
+          <div id="ai-insights"></div>
+          <button class="btn btn-gold btn-sm w-full" style="justify-content:center;margin-top:10px;width:100%" onclick="toggleAI()">🤖 Open Marina AI</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTACTS -->
+    <div class="page" id="page-contacts">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+        <div style="display:flex;gap:7px;flex-wrap:wrap">
+          <input class="input" placeholder="🔍 Search contacts..." oninput="filterContacts(this.value)" style="width:220px;height:34px;font-size:12px"/>
+          <select class="select" style="width:130px;height:34px;font-size:12px" onchange="filterByType(this.value)">
+            <option value="">All types</option>
+            <option value="client">Clients</option>
+            <option value="prospect">Prospects</option>
+            <option value="vendor">Vendors</option>
+          </select>
+          <select class="select" style="width:130px;height:34px;font-size:12px">
+            <option>All statuses</option>
+            <option>Active</option>
+            <option>VIP</option>
+            <option>Inactive</option>
+          </select>
+        </div>
+        <div style="display:flex;gap:7px">
+          <button class="btn btn-glass btn-sm">⬇ Export</button>
+          <button class="btn btn-gold btn-sm" onclick="showModal('add-contact')">+ Add Contact</button>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:14px">
+        <div class="card p-3 flex" style="align-items:center;gap:10px"><div style="width:34px;height:34px;background:rgba(147,197,253,0.1);border-radius:8px;display:flex;align-items:center;justify-content:center">👥</div><div><div class="text-lg font-bold">248</div><div class="text-xs text-muted">Total</div></div></div>
+        <div class="card p-3 flex" style="align-items:center;gap:10px"><div style="width:34px;height:34px;background:rgba(52,211,153,0.1);border-radius:8px;display:flex;align-items:center;justify-content:center">✅</div><div><div class="text-lg font-bold text-gold">142</div><div class="text-xs text-muted">Active</div></div></div>
+        <div class="card p-3 flex" style="align-items:center;gap:10px"><div style="width:34px;height:34px;background:rgba(200,169,107,0.1);border-radius:8px;display:flex;align-items:center;justify-content:center">⭐</div><div><div class="text-lg font-bold">28</div><div class="text-xs text-muted">VIP</div></div></div>
+        <div class="card p-3 flex" style="align-items:center;gap:10px"><div style="width:34px;height:34px;background:rgba(196,181,253,0.1);border-radius:8px;display:flex;align-items:center;justify-content:center">🆕</div><div><div class="text-lg font-bold">12</div><div class="text-xs text-muted">New</div></div></div>
+        <div class="card p-3 flex" style="align-items:center;gap:10px"><div style="width:34px;height:34px;background:rgba(248,113,113,0.1);border-radius:8px;display:flex;align-items:center;justify-content:center">⚠️</div><div><div class="text-lg font-bold">7</div><div class="text-xs text-muted">Follow-up</div></div></div>
+      </div>
+
+      <div class="card" style="overflow:hidden">
+        <div style="padding:10px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+          <span class="text-sm text-muted" id="contacts-count-label">248 contacts</span>
+          <div style="display:flex;gap:5px">
+            <button class="btn btn-glass btn-sm" onclick="setView('table')">≡ List</button>
+            <button class="btn btn-glass btn-sm" onclick="setView('grid')">⊞ Cards</button>
+          </div>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="table" id="contacts-table">
+            <thead>
+              <tr>
+                <th>Contact</th><th>Company</th><th>Type</th><th>Status</th>
+                <th>Deal Value</th><th>Last Activity</th><th>Tags</th><th style="width:70px"></th>
+              </tr>
+            </thead>
+            <tbody id="contacts-tbody"></tbody>
+          </table>
+        </div>
+        <div style="padding:10px 14px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+          <span class="text-xs text-muted">Showing 1–12 of 248</span>
+          <div style="display:flex;gap:4px">
+            <button class="btn btn-glass btn-sm">← Prev</button>
+            <button class="btn btn-gold btn-sm" style="min-width:28px">1</button>
+            <button class="btn btn-glass btn-sm">2</button>
+            <button class="btn btn-glass btn-sm">3</button>
+            <button class="btn btn-glass btn-sm">Next →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PIPELINE -->
+    <div class="page" id="page-pipeline">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+          <select class="select" style="width:180px;height:34px;font-size:12px">
+            <option>Sales Pipeline</option>
+            <option>Legal Services</option>
+            <option>Property Rentals</option>
+          </select>
+          <span class="text-sm text-muted">Total: <strong class="text-gold">$1,284,500</strong></span>
+          <span class="text-sm text-muted">· 32 deals</span>
+        </div>
+        <button class="btn btn-gold btn-sm" onclick="showModal('add-deal')">+ New Deal</button>
+      </div>
+      <div style="display:flex;gap:10px;overflow-x:auto;margin-bottom:14px;padding-bottom:4px">
+        <div class="card p-3 flex-none" style="display:flex;align-items:center;gap:8px;min-width:140px"><span style="font-size:16px">📥</span><div><div class="font-bold text-md">8</div><div class="text-xs text-muted">Lead · $124K</div></div></div>
+        <div class="card p-3 flex-none" style="display:flex;align-items:center;gap:8px;min-width:140px"><span style="font-size:16px">🎯</span><div><div class="font-bold text-md">6</div><div class="text-xs text-muted">Qualified · $218K</div></div></div>
+        <div class="card p-3 flex-none" style="display:flex;align-items:center;gap:8px;min-width:140px"><span style="font-size:16px">📋</span><div><div class="font-bold text-md">7</div><div class="text-xs text-muted">Proposal · $356K</div></div></div>
+        <div class="card p-3 flex-none" style="display:flex;align-items:center;gap:8px;min-width:140px"><span style="font-size:16px">🤝</span><div><div class="font-bold text-md">5</div><div class="text-xs text-muted">Negotiation · $280K</div></div></div>
+        <div class="card p-3 flex-none" style="display:flex;align-items:center;gap:8px;min-width:140px;border-color:rgba(52,211,153,0.3)"><span style="font-size:16px">✅</span><div><div class="font-bold text-md" style="color:#34D399">6</div><div class="text-xs" style="color:#34D399">Won · $306K</div></div></div>
+      </div>
+      <div class="kanban" id="kanban-board"></div>
+    </div>
+
+    <!-- TASKS -->
+    <div class="page" id="page-tasks">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+        <div style="display:flex;gap:7px">
+          <select class="select" style="width:140px;height:34px;font-size:12px"><option>All priorities</option><option>High</option><option>Medium</option><option>Low</option></select>
+          <select class="select" style="width:140px;height:34px;font-size:12px"><option>All assignees</option><option>Me</option><option>Team</option></select>
+        </div>
+        <button class="btn btn-gold btn-sm" onclick="showModal('add-task')">+ Add Task</button>
+      </div>
+      <div class="grid2 gap-3">
+        <div>
+          <div style="display:flex;align-items:center;gap:7px;margin-bottom:10px"><div class="dot dot-red"></div><span class="text-sm font-semi" style="color:#f87171">OVERDUE</span><span class="badge b-red" id="overdue-ct">3 tasks</span></div>
+          <div id="tasks-overdue"></div>
+          <div style="display:flex;align-items:center;gap:7px;margin:14px 0 10px"><div class="dot dot-gold"></div><span class="text-sm font-semi text-gold">TODAY</span><span class="badge b-gold" id="today-ct">4 tasks</span></div>
+          <div id="tasks-today"></div>
+        </div>
+        <div>
+          <div style="display:flex;align-items:center;gap:7px;margin-bottom:10px"><div class="dot dot-blue" style="background:#93c5fd"></div><span class="text-sm font-semi" style="color:#93c5fd">UPCOMING</span></div>
+          <div id="tasks-upcoming"></div>
+          <div style="display:flex;align-items:center;gap:7px;margin:14px 0 10px"><div class="dot dot-green"></div><span class="text-sm font-semi" style="color:#34D399">COMPLETED</span><span class="badge b-green">14 this week</span></div>
+          <div id="tasks-done"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ANALYTICS -->
+    <div class="page" id="page-analytics">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+        <div style="display:flex;gap:7px">
+          <select class="select" style="width:140px;height:34px;font-size:12px"><option>Last 30 days</option><option>90 days</option><option>6 months</option><option>This year</option></select>
+          <select class="select" style="width:160px;height:34px;font-size:12px"><option>All organizations</option><option>Notaría 322</option><option>TropicCo</option></select>
+        </div>
+        <button class="btn btn-gold btn-sm">⬇ Export Report</button>
+      </div>
+      <div class="kpi-grid mb-3">
+        <div class="kpi"><div class="kpi-icon" style="background:rgba(52,211,153,0.1)">💰</div><div class="kpi-label">Revenue MTD</div><div class="kpi-value" style="font-size:20px">$284.7K</div><div class="kpi-delta delta-up">↑ 18.4% MoM</div></div>
+        <div class="kpi"><div class="kpi-icon" style="background:rgba(200,169,107,0.1)">🆕</div><div class="kpi-label">New Leads</div><div class="kpi-value" style="font-size:20px">47</div><div class="kpi-delta delta-up">↑ 23% MoM</div></div>
+        <div class="kpi"><div class="kpi-icon" style="background:rgba(196,181,253,0.1)">🎯</div><div class="kpi-label">Conversion</div><div class="kpi-value" style="font-size:20px">67.3%</div><div class="kpi-delta delta-up">↑ 3.2% vs Q3</div></div>
+        <div class="kpi"><div class="kpi-icon" style="background:rgba(147,197,253,0.1)">📊</div><div class="kpi-label">Avg Deal Size</div><div class="kpi-value" style="font-size:20px">$38.9K</div><div class="kpi-delta delta-up">↑ 8.1% MoM</div></div>
+      </div>
+      <div class="grid2 gap-3 mb-3">
+        <div class="chart-card">
+          <div class="chart-head"><div><div class="chart-title">12-Month Revenue</div><div class="chart-sub">Annual trend</div></div></div>
+          <div class="chart-wrap" style="height:200px"><canvas id="revTrend"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-head"><div><div class="chart-title">Pipeline Conversion</div><div class="chart-sub">Stage-by-stage</div></div></div>
+          <div class="chart-wrap" style="height:200px"><canvas id="convChart"></canvas></div>
+        </div>
+      </div>
+      <div class="grid2 gap-3">
+        <div class="chart-card">
+          <div class="chart-head"><div><div class="chart-title">Lead Sources</div></div></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:center">
+            <div class="chart-wrap" style="height:160px"><canvas id="sourceChart"></canvas></div>
+            <div id="source-leg"></div>
+          </div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-head"><div><div class="chart-title">Team Performance</div></div></div>
+          <div id="team-perf"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MESSAGES -->
+    <div class="page" id="page-messages">
+      <div style="display:grid;grid-template-columns:260px 1fr;height:calc(100vh - 140px);border:1px solid var(--border);border-radius:var(--r2);overflow:hidden">
+        <div style="border-right:1px solid var(--border);display:flex;flex-direction:column">
+          <div style="padding:10px"><input class="input" placeholder="🔍 Search..." style="height:32px;font-size:11px"/></div>
+          <div style="flex:1;overflow-y:auto" id="conv-list"></div>
+        </div>
+        <div style="display:flex;flex-direction:column;background:rgba(5,5,5,0.3)">
+          <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:9px">
+            <div class="av av-md av-gold">MG</div>
+            <div><div class="font-semi text-md">María González Ruiz</div><div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)"><div class="dot dot-green" style="width:6px;height:6px"></div>Online · Client since 2022</div></div>
+            <div style="margin-left:auto;display:flex;gap:6px">
+              <button class="icon-btn">📞</button>
+              <button class="icon-btn">📹</button>
+              <button class="icon-btn">⋮</button>
+            </div>
+          </div>
+          <div style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px" id="msg-thread"></div>
+          <div style="padding:10px 14px;border-top:1px solid var(--border)">
+            <div style="display:flex;gap:7px;align-items:flex-end">
+              <div style="flex:1;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:8px 12px">
+                <textarea style="width:100%;background:transparent;border:none;color:var(--ivory);font-size:13px;resize:none;outline:none;min-height:32px;font-family:inherit" placeholder="Type a message..."></textarea>
+              </div>
+              <button class="btn btn-gold" style="height:40px">➤</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DOCUMENTS -->
+    <div class="page" id="page-documents">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+        <div style="display:flex;gap:7px">
+          <input class="input" placeholder="🔍 Search documents..." style="width:220px;height:34px;font-size:12px"/>
+          <select class="select" style="width:160px;height:34px;font-size:12px"><option>All categories</option><option>Escrituras</option><option>Contratos</option><option>Poderes</option><option>Actas</option></select>
+        </div>
+        <div style="display:flex;gap:7px">
+          <button class="btn btn-glass btn-sm">⬆ Upload</button>
+          <button class="btn btn-gold btn-sm">+ New Doc</button>
+        </div>
+      </div>
+      <div class="card" style="overflow:hidden">
+        <table class="table">
+          <thead><tr><th>Name</th><th>Category</th><th>Client</th><th>Size</th><th>Modified</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="docs-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- BOOKINGS -->
+    <div class="page" id="page-bookings">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+        <div style="display:flex;gap:7px">
+          <select class="select" style="width:160px;height:34px;font-size:12px"><option>All services</option><option>Notarial</option><option>Property</option><option>Consultation</option></select>
+          <select class="select" style="width:130px;height:34px;font-size:12px"><option>All statuses</option><option>Confirmed</option><option>Pending</option></select>
+        </div>
+        <button class="btn btn-gold btn-sm" onclick="showModal('add-booking')">+ New Booking</button>
+      </div>
+      <div class="card" style="overflow:hidden">
+        <table class="table">
+          <thead><tr><th>Client</th><th>Service</th><th>Date & Time</th><th>Duration</th><th>Agent</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="bookings-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- AUTOMATIONS -->
+    <div class="page" id="page-automations">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <div class="text-sm text-muted">Automated workflows triggered by CRM events</div>
+        <button class="btn btn-gold btn-sm">+ New Automation</button>
+      </div>
+      <div id="automations-list"></div>
+    </div>
+
+    <!-- AI CENTER -->
+    <div class="page" id="page-ai">
+      <div class="grid2 gap-3 mb-3">
+        <div class="card p-5" style="border-color:var(--border-gold)">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+            <div style="width:48px;height:48px;background:rgba(200,169,107,0.1);border:1px solid rgba(200,169,107,0.3);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px">🧠</div>
+            <div>
+              <div class="font-semi text-lg">MARINA AI</div>
+              <div style="display:flex;align-items:center;gap:5px;font-size:11px"><div class="dot dot-green" style="width:6px;height:6px"></div><span style="color:#34D399">All systems operational</span></div>
+            </div>
+            <span class="badge b-gold" style="margin-left:auto">v2.4</span>
+          </div>
+          <div class="grid3 gap-2 mb-4" id="ai-modules"></div>
+          <button class="btn btn-gold w-full" style="width:100%;justify-content:center" onclick="toggleAI()">🤖 Open AI Assistant</button>
+        </div>
+        <div class="card p-4">
+          <div class="font-semi text-md mb-3">AI Usage Analytics</div>
+          <div id="ai-stats"></div>
+          <div class="chart-wrap mt-3" style="height:130px"><canvas id="aiUsage"></canvas></div>
+        </div>
+      </div>
+      <div class="grid3 gap-3">
+        <div class="card p-4"><div class="font-semi text-md mb-2 text-gold">⚖️ Legal AI</div><div class="text-sm text-muted mb-3">AI trained on Mexican notarial law and legal documents.</div><div id="legal-feats"></div></div>
+        <div class="card p-4"><div class="font-semi text-md mb-2 text-gold">🏘️ Property AI</div><div class="text-sm text-muted mb-3">Property valuation, lease analysis, and tenant management.</div><div id="prop-feats"></div></div>
+        <div class="card p-4"><div class="font-semi text-md mb-2 text-gold">📈 Sales AI</div><div class="text-sm text-muted mb-3">Lead scoring, deal forecasting, and sales automation.</div><div id="sales-feats"></div></div>
+      </div>
+    </div>
+
+    <!-- TEAM -->
+    <div class="page" id="page-team">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <div class="text-sm text-muted">Manage team members, roles, and permissions</div>
+        <button class="btn btn-gold btn-sm">+ Invite Member</button>
+      </div>
+      <div class="grid3 gap-3" id="team-grid"></div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="page" id="page-settings">
+      <div class="grid2 gap-3">
+        <div class="card p-3" style="max-height:400px">
+          <div id="settings-nav"></div>
+        </div>
+        <div class="card p-5">
+          <div class="font-semi text-xl mb-1">Organization Settings</div>
+          <div class="text-sm text-muted mb-4">Configure your organization profile</div>
+          <div class="input-row">
+            <div class="input-group"><label>Organization name</label><input class="input" value="Notaría Pública 322"/></div>
+            <div class="input-group"><label>Industry</label><select class="select"><option>Legal Services</option><option>Property Management</option></select></div>
+            <div class="input-group"><label>Primary contact</label><input class="input" value="Lic. Alejandro Rios García"/></div>
+            <div class="input-group"><label>Location</label><input class="input" value="Los Cabos, BCS, México"/></div>
+          </div>
+          <div class="divider"></div>
+          <div style="display:flex;gap:8px;justify-content:flex-end">
+            <button class="btn btn-glass">Cancel</button>
+            <button class="btn btn-gold" onclick="showToast('Settings saved ✓')">💾 Save Changes</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- AI Sidebar Panel -->
+<div class="ai-panel" id="ai-panel">
+  <div class="ai-panel-header">
+    <div class="ai-panel-title"><div class="ai-dot"></div> MARINA AI <span class="badge b-gold" style="margin-left:auto;font-size:9px">GPT-4o</span></div>
+    <div class="ai-panel-sub"><div class="dot dot-green" style="width:5px;height:5px"></div> Online · CRM mode active</div>
+  </div>
+  <div class="ai-mode-row">
+    <button class="ai-mode active" onclick="setAIMode(this)">CRM</button>
+    <button class="ai-mode" onclick="setAIMode(this)">Legal</button>
+    <button class="ai-mode" onclick="setAIMode(this)">Property</button>
+    <button class="ai-mode" onclick="setAIMode(this)">Analytics</button>
+    <button class="ai-mode" onclick="setAIMode(this)">Sales</button>
+  </div>
+  <div class="ai-msgs" id="ai-msg-list"></div>
+  <div class="ai-chips" id="ai-chips"></div>
+  <div class="ai-input-row">
+    <textarea class="ai-ta" id="ai-input" placeholder="Ask Marina anything about your CRM..." onkeydown="aiKeyDown(event)"></textarea>
+    <button class="ai-send" onclick="sendAI()">➤</button>
+  </div>
+</div>
+
+</div><!-- /layout -->
+</div><!-- /app -->
+
+<!-- Contact Drawer -->
+<div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
+<div class="drawer" id="contact-drawer">
+  <div class="drawer-head">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div class="av av-xl av-gold" id="d-av">MG</div>
+        <div>
+          <div class="font-semi text-xl" id="d-name">Contact Name</div>
+          <div style="display:flex;gap:6px;margin-top:4px">
+            <span class="badge b-green" id="d-status">Active client</span>
+            <span class="badge b-gold" id="d-tier">VIP</span>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-ghost btn-sm">✏️ Edit</button>
+        <button class="btn btn-glass btn-sm" onclick="closeDrawer()">✕</button>
+      </div>
+    </div>
+  </div>
+  <div class="drawer-tabs">
+    <div class="dtab active" onclick="switchDTab('overview',this)">Overview</div>
+    <div class="dtab" onclick="switchDTab('timeline',this)">Timeline</div>
+    <div class="dtab" onclick="switchDTab('deals',this)">Deals</div>
+    <div class="dtab" onclick="switchDTab('docs',this)">Documents</div>
+  </div>
+  <div class="drawer-body">
+    <div id="dtab-overview"></div>
+    <div id="dtab-timeline" style="display:none"></div>
+    <div id="dtab-deals" style="display:none"></div>
+    <div id="dtab-docs" style="display:none"></div>
+  </div>
+  <div class="drawer-footer">
+    <button class="btn btn-gold" style="flex:1;justify-content:center">📅 Book Appointment</button>
+    <button class="btn btn-glass">📞</button>
+    <button class="btn btn-glass">💬</button>
+    <button class="btn btn-glass">📧</button>
+    <button class="btn btn-glass" onclick="toggleAI()">🤖</button>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModalOnBg(event)">
+  <div class="modal" id="modal-box"></div>
+</div>
+
+<!-- Toast -->
+<div id="toast" style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:rgba(10,10,10,0.96);border:1px solid var(--border-gold);border-radius:var(--r);padding:10px 20px;font-size:13px;color:var(--ivory);z-index:9999;display:none;box-shadow:0 8px 30px rgba(0,0,0,0.4)"></div>
+
+<script>
+// ═══════════════════════════════════════
+//  AETHERION CRM v2 — Clean Build
+// ═══════════════════════════════════════
+
+// ─ DATA ─────────────────────────────────
+var state = {
+  org: 1,
+  page: 'dashboard',
+  aiOpen: false,
+  drawerContact: null,
+  contacts: [
+    {id:1,name:'María González Ruiz',init:'MG',av:'av-gold',co:'González Arquitectura S.A.',type:'client',status:'active',tier:'vip',val:284000,last:'2h ago',tags:['VIP','Notarial'],email:'mgonzalez@email.com',phone:'+52 624 155 0101',loc:'Cabo San Lucas',deals:3,notes:'Long-term client since 2018.',src:'Referral'},
+    {id:2,name:'Roberto Jiménez Soto',init:'RJ',av:'av-ruby',co:'Inversiones del Pacífico',type:'client',status:'active',tier:'vip',val:420000,last:'4h ago',tags:['VIP','Corporate'],email:'rjimenez@inspacifico.mx',phone:'+52 624 155 0202',loc:'San José del Cabo',deals:5,notes:'Major investor.',src:'LinkedIn'},
+    {id:3,name:'Ana Patricia Torres',init:'AT',av:'av-green',co:'Torres & Asociados',type:'client',status:'active',tier:'standard',val:95000,last:'1d ago',tags:['Legal','Poderes'],email:'atorres@torresasoc.com',phone:'+52 624 155 0303',loc:'La Paz',deals:2,notes:'Regular client for power of attorney.',src:'Website'},
+    {id:4,name:'Carlos E. Martínez',init:'CM',av:'av-blue',co:'Constructora Baja Norte',type:'prospect',status:'active',tier:'standard',val:180000,last:'2d ago',tags:['Prospect'],email:'cemartinez@bajaconstruct.mx',phone:'+52 624 155 0404',loc:'Cabo SL',deals:1,notes:'Interested in commercial docs.',src:'Cold outreach'},
+    {id:5,name:'Diana Ramos Vega',init:'DR',av:'av-purple',co:'Ramos Bienes Raíces',type:'vendor',status:'active',tier:'partner',val:67000,last:'3d ago',tags:['Partner'],email:'dramos@ramosbienes.mx',phone:'+52 624 155 0505',loc:'Todos Santos',deals:4,notes:'Real estate broker partner.',src:'Partner program'},
+    {id:6,name:'Fernando Castillo',init:'FC',av:'av-gray',co:'Castillo Holdings LLC',type:'client',status:'inactive',tier:'standard',val:35000,last:'2w ago',tags:['Inactive'],email:'fcastillo@castilloh.us',phone:'+1 310 555 0606',loc:'Los Angeles',deals:1,notes:'US-based investor.',src:'Referral'},
+    {id:7,name:'Lucia Navarro Pérez',init:'LN',av:'av-gold',co:'NavTech Solutions',type:'client',status:'active',tier:'standard',val:48000,last:'5h ago',tags:['Tech'],email:'lnavarro@navtech.mx',phone:'+52 624 155 0707',loc:'Cabo SL',deals:2,notes:'Tech company needing notarial services.',src:'Google Ads'},
+    {id:8,name:'Héctor Morales Luna',init:'HM',av:'av-ruby',co:'Grupo Morales',type:'client',status:'active',tier:'vip',val:560000,last:'1h ago',tags:['VIP','Multi-property'],email:'hmorales@grupomorales.mx',phone:'+52 624 155 0808',loc:'San José',deals:7,notes:'Highest-value client.',src:'Referral'},
+    {id:9,name:'Sofia Delgado',init:'SD',av:'av-green',co:'Delgado Vacational Rentals',type:'client',status:'active',tier:'standard',val:92000,last:'6h ago',tags:['Rentals'],email:'sdelgado@delgadovr.com',phone:'+52 624 155 0909',loc:'El Pedregal',deals:3,notes:'Vacation rental property owner.',src:'TropicCo'},
+    {id:10,name:'Juan Pablo Reyes',init:'JP',av:'av-blue',co:'Reyes Capital Group',type:'prospect',status:'active',tier:'standard',val:0,last:'Just now',tags:['New lead'],email:'jpreyes@reyescapital.com',phone:'+52 624 155 1010',loc:'CDMX',deals:0,notes:'New lead from conference.',src:'Event'},
+    {id:11,name:'Valentina Cruz',init:'VC',av:'av-purple',co:'Cruz Family Trust',type:'client',status:'active',tier:'vip',val:320000,last:'3h ago',tags:['VIP','Trust'],email:'vcruz@cruzfamilytrust.mx',phone:'+52 624 155 1111',loc:'Los Cabos',deals:4,notes:'Family trust management.',src:'Referral'},
+    {id:12,name:'Miguel Ángel Santos',init:'MS',av:'av-gray',co:'Santos Constructora',type:'client',status:'inactive',tier:'standard',val:28000,last:'1mo ago',tags:['Dormant'],email:'masantos@santosconstruct.mx',phone:'+52 624 155 1212',loc:'La Paz',deals:1,notes:'Project paused.',src:'Cold call'},
+  ],
+  pipeline: [
+    {id:1,title:'Escritura Pedregal',co:'Grupo Morales',val:85000,stage:'negotiation',pri:'high',agent:'AR',days:12,cid:8},
+    {id:2,title:'Poder Notarial Corp.',co:'NavTech Solutions',val:12000,stage:'proposal',pri:'medium',agent:'CV',days:5,cid:7},
+    {id:3,title:'Contrato Arrendamiento',co:'González Arquitectura',val:38000,stage:'qualified',pri:'high',agent:'AR',days:8,cid:1},
+    {id:4,title:'Subdivisión Terreno SJC',co:'Inversiones Pacífico',val:145000,stage:'proposal',pri:'high',agent:'RG',days:21,cid:2},
+    {id:5,title:'Cruz Family Trust',co:'Cruz Family Trust',val:95000,stage:'negotiation',pri:'medium',agent:'CV',days:14,cid:11},
+    {id:6,title:'Acta Constitutiva SAPI',co:'Reyes Capital Group',val:28000,stage:'lead',pri:'low',agent:'AR',days:2,cid:10},
+    {id:7,title:'Property Title x3',co:'Castillo Holdings',val:180000,stage:'won',pri:'high',agent:'AR',days:30,cid:6},
+    {id:8,title:'Vacation Rental Docs',co:'Delgado Vacational',val:24000,stage:'lead',pri:'medium',agent:'CV',days:1,cid:9},
+    {id:9,title:'Lease SJC Marina',co:'Torres & Asociados',val:45000,stage:'qualified',pri:'medium',agent:'RG',days:10,cid:3},
+    {id:10,title:'Escritura Casa Palmilla',co:'Santos Constructora',val:210000,stage:'won',pri:'high',agent:'AR',days:45,cid:12},
+    {id:11,title:'Contrato Prestación',co:'Constructora Baja',val:18000,stage:'proposal',pri:'low',agent:'CV',days:7,cid:4},
+    {id:12,title:'Power of Attorney US',co:'Castillo Holdings',val:8500,stage:'lead',pri:'low',agent:'RG',days:3,cid:6},
+  ],
+  tasks: [
+    {id:1,title:'Follow up — Héctor Morales (Escritura)',pri:'high',due:'2024-01-06',done:false,agent:'AR'},
+    {id:2,title:'Prepare Poder Notarial for NavTech',pri:'medium',due:'2024-01-08',done:false,agent:'CV'},
+    {id:3,title:'Review Cruz Family Trust documents',pri:'high',due:'2024-01-07',done:false,agent:'AR'},
+    {id:4,title:'Send proposal to Carlos Martínez',pri:'medium',due:'2024-01-09',done:false,agent:'RG'},
+    {id:5,title:'Schedule property viewing — unit 4B',pri:'low',due:'2024-01-10',done:false,agent:'CV'},
+    {id:6,title:'Notarize González Arquitectura contract',pri:'high',due:'2024-01-06',done:false,agent:'AR'},
+    {id:7,title:'Update CRM records for Q4',pri:'low',due:'2024-01-11',done:false,agent:'AR'},
+    {id:8,title:'Call Juan Pablo Reyes — qualify lead',pri:'medium',due:'2024-01-08',done:false,agent:'AR'},
+    {id:9,title:'Draft invoice — Inversiones Pacífico',pri:'medium',due:'2024-01-09',done:true,agent:'CV'},
+    {id:10,title:'Archive Q4 documents',pri:'low',due:'2024-01-05',done:true,agent:'RG'},
+  ],
+  notifications: [
+    {id:1,title:'New deal requires approval',body:'Subdivisión Terreno SJC — $145K pending review',time:'10m ago',read:false},
+    {id:2,title:'Task overdue',body:'Notarize González Arquitectura contract',time:'2h ago',read:false},
+    {id:3,title:'New client message',body:'María González: "¿Cuándo está lista la escritura?"',time:'5h ago',read:false},
+    {id:4,title:'AI insight ready',body:'Marina: Pipeline analysis complete. 3 deals at risk.',time:'6h ago',read:true},
+    {id:5,title:'Payment received',body:'Castillo Holdings — Invoice #0042 — $8,500',time:'1d ago',read:true},
+  ],
+  docs: [
+    {name:'Escritura_Casa_Palmilla_2024.pdf',cat:'Escrituras',client:'Santos Constructora',size:'2.4 MB',mod:'Jan 8',status:'signed'},
+    {name:'Poder_NavTech_Corp_Draft.docx',cat:'Poderes Notariales',client:'NavTech Solutions',size:'840 KB',mod:'Jan 7',status:'draft'},
+    {name:'Trust_Cruz_Family_v3.pdf',cat:'Contratos',client:'Cruz Family Trust',size:'5.1 MB',mod:'Jan 6',status:'review'},
+    {name:'Contrato_Arrendamiento_Torres.pdf',cat:'Contratos',client:'Torres & Asociados',size:'1.2 MB',mod:'Jan 5',status:'signed'},
+    {name:'Acta_Constitutiva_Reyes.docx',cat:'Actas',client:'Reyes Capital Group',size:'920 KB',mod:'Jan 4',status:'draft'},
+    {name:'Invoice_0042_Castillo.pdf',cat:'Invoices',client:'Castillo Holdings',size:'380 KB',mod:'Jan 3',status:'paid'},
+    {name:'Escritura_Pedregal_Draft.pdf',cat:'Escrituras',client:'Grupo Morales',size:'3.8 MB',mod:'Jan 8',status:'draft'},
+    {name:'NDA_InversionesPacifico.pdf',cat:'Contratos',client:'Inversiones Pacífico',size:'480 KB',mod:'Dec 28',status:'signed'},
+  ],
+  bookings: [
+    {client:'María González',service:'Notarial consultation',dt:'Jan 9 · 10:00 AM',dur:'60 min',agent:'Lic. A. Rios',status:'confirmed'},
+    {client:'Héctor Morales',service:'Escritura signing ceremony',dt:'Jan 9 · 2:00 PM',dur:'90 min',agent:'Lic. A. Rios',status:'confirmed'},
+    {client:'Valentina Cruz',service:'Power of attorney review',dt:'Jan 10 · 11:00 AM',dur:'60 min',agent:'C. Vargas',status:'confirmed'},
+    {client:'Juan Pablo Reyes',service:'Initial consultation',dt:'Jan 11 · 9:00 AM',dur:'45 min',agent:'R. García',status:'pending'},
+    {client:'Carlos Martínez',service:'Contract discussion',dt:'Jan 12 · 3:00 PM',dur:'60 min',agent:'C. Vargas',status:'pending'},
+    {client:'Ana Torres',service:'Poder Notarial',dt:'Jan 13 · 10:00 AM',dur:'45 min',agent:'Lic. A. Rios',status:'confirmed'},
+  ],
+  team: [
+    {name:'Alejandro Rios García',init:'AR',av:'av-gold',role:'Notario Público',dept:'Legal',deals:18,rev:284000,tasks:8},
+    {name:'Carmen Vargas López',init:'CV',av:'av-green',role:'Asociada Legal',dept:'Legal',deals:9,rev:118000,tasks:5},
+    {name:'Ricardo García Pérez',init:'RG',av:'av-blue',role:'Pasante Notarial',dept:'Legal',deals:5,rev:62000,tasks:4},
+    {name:'Sofía Mendoza Cruz',init:'SM',av:'av-purple',role:'Asistente Admin',dept:'Operations',deals:0,rev:0,tasks:12},
+    {name:'Luis Hernández',init:'LH',av:'av-gray',role:'Property Manager',dept:'TropicCo',deals:6,rev:94000,tasks:7},
+  ],
+  aiMessages: [
+    {role:'bot',text:'Hola! I\'m Marina, your AI business assistant. I\'m connected to your CRM data. I can analyze your pipeline, draft client messages, identify follow-up opportunities, and much more. What would you like to know?'}
+  ],
+  filteredContacts: null,
+  dragging: null,
+  charts: {}
+};
+
+// ─ LOGIN ─────────────────────────────────
+function selectOrg(n) {
+  state.org = n;
+  document.getElementById('org1').classList.toggle('active', n === 1);
+  document.getElementById('org2').classList.toggle('active', n === 2);
+}
+
+function switchLoginTab(tab) {
+  ['email','phone','sso'].forEach(function(t) {
+    document.getElementById('lform-' + t).style.display = 'none';
+    document.getElementById('ltab-' + t).classList.remove('active');
+  });
+  document.getElementById('lform-' + tab).style.display = 'block';
+  document.getElementById('ltab-' + tab).classList.add('active');
+}
+
+function doLogin() {
+  var orgs = [
+    {icon:'⚖️',name:'Notaría Pública 322',type:'Legal Services · Los Cabos'},
+    {icon:'🏖️',name:'TropicCo Property Mgmt',type:'Property Management · BCS'}
+  ];
+  var org = orgs[state.org - 1];
+  document.getElementById('sb-icon').textContent = org.icon;
+  document.getElementById('sb-name').textContent = org.name;
+  document.getElementById('sb-type').textContent = org.type;
+
+  var login = document.getElementById('login');
+  login.style.transition = 'opacity .4s';
+  login.style.opacity = '0';
+  setTimeout(function() {
+    login.style.display = 'none';
+    var app = document.getElementById('app');
+    app.style.display = 'block';
+    goPage('dashboard');
+    renderNotifications();
+    initAI();
+  }, 400);
+}
+
+// ─ NAVIGATION ────────────────────────────
+function goPage(page) {
+  // Hide all pages
+  var pages = document.querySelectorAll('.page');
+  pages.forEach(function(p) { p.classList.remove('active'); });
+
+  // Remove active from all nav items
+  var navItems = document.querySelectorAll('.nav-item');
+  navItems.forEach(function(n) { n.classList.remove('active'); });
+
+  // Show target page
+  var target = document.getElementById('page-' + page);
+  if (target) target.classList.add('active');
+
+  // Activate nav item
+  var navEl = document.getElementById('nav-' + page);
+  if (navEl) navEl.classList.add('active');
+
+  // Update topbar
+  var titles = {
+    dashboard:'Dashboard',contacts:'Contacts',pipeline:'Pipeline',tasks:'Tasks',
+    messages:'Messages',documents:'Documents',bookings:'Bookings',
+    automations:'Automations',analytics:'Analytics',ai:'AI Center',
+    team:'Team',settings:'Settings'
+  };
+  document.getElementById('page-title').textContent = titles[page] || page;
+  document.getElementById('page-crumb').textContent = titles[page] || page;
+
+  state.page = page;
+
+  // Render page content
+  var renders = {
+    dashboard: renderDashboard,
+    contacts: renderContacts,
+    pipeline: renderPipeline,
+    tasks: renderTasks,
+    analytics: renderAnalytics,
+    messages: renderMessages,
+    documents: renderDocs,
+    bookings: renderBookings,
+    automations: renderAutomations,
+    ai: renderAI,
+    team: renderTeam,
+    settings: renderSettings
+  };
+  if (renders[page]) renders[page]();
+}
+
+// ─ DASHBOARD ─────────────────────────────
+function renderDashboard() {
+  renderDashActivity();
+  renderDashTasks();
+  renderDashInsights();
+  renderFunnel();
+  setTimeout(function() { renderRevChart(); }, 50);
+}
+
+function renderDashActivity() {
+  var items = [
+    {icon:'🔀',bg:'rgba(200,169,107,0.1)',title:'Deal moved to Negotiation',meta:'Escritura Pedregal · Héctor Morales',time:'2h ago'},
+    {icon:'👤',bg:'rgba(147,197,253,0.1)',title:'New contact added',meta:'Juan Pablo Reyes · Reyes Capital',time:'4h ago'},
+    {icon:'💬',bg:'rgba(52,211,153,0.1)',title:'Message from client',meta:'María González: "¿Cuándo está lista?"',time:'5h ago'},
+    {icon:'📅',bg:'rgba(196,181,253,0.1)',title:'Appointment booked',meta:'Valentina Cruz · Power of Attorney',time:'6h ago'},
+    {icon:'🏆',bg:'rgba(245,158,11,0.1)',title:'Deal closed — WON!',meta:'Escritura Casa Palmilla · $210,000',time:'Yesterday'},
+  ];
+  var el = document.getElementById('dash-activity');
+  if (!el) return;
+  el.innerHTML = items.map(function(a) {
+    return '<div class="tl-item">' +
+      '<div class="tl-line"></div>' +
+      '<div class="tl-dot" style="background:' + a.bg + '">' + a.icon + '</div>' +
+      '<div class="tl-content">' +
+        '<div class="tl-title">' + a.title + '</div>' +
+        '<div class="tl-meta">' + a.meta + ' · ' + a.time + '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function renderDashTasks() {
+  var el = document.getElementById('dash-tasks');
+  if (!el) return;
+  var urgent = state.tasks.filter(function(t) { return !t.done; }).slice(0, 4);
+  el.innerHTML = urgent.map(function(t) {
+    var priBg = t.pri === 'high' ? 'p-high' : t.pri === 'medium' ? 'p-med' : 'p-low';
+    return '<div class="task-item">' +
+      '<div class="p-bar ' + priBg + '"></div>' +
+      '<div class="task-check ' + (t.done ? 'done' : '') + '" onclick="toggleTask(' + t.id + ')">' +
+        (t.done ? '✓' : '') +
+      '</div>' +
+      '<div class="task-title ' + (t.done ? 'done' : '') + '">' + t.title + '</div>' +
+      '<div class="task-due ' + getDueClass(t.due) + '">' + fmtDue(t.due) + '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function renderDashInsights() {
+  var el = document.getElementById('ai-insights');
+  if (!el) return;
+  var items = [
+    {icon:'🔴',text:'3 deals inactive for 7+ days'},
+    {icon:'⚡',text:'Conversion rate up 3.2% this quarter'},
+    {icon:'💡',text:'Best contact time for RJ: Tues 10–11am'},
+    {icon:'📈',text:'Referral channel converting at 82%'},
+  ];
+  el.innerHTML = items.map(function(i) {
+    return '<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:var(--r);background:rgba(200,169,107,0.05);border:1px solid rgba(200,169,107,0.1);margin-bottom:6px;cursor:pointer" onclick="toggleAI()">' +
+      '<span style="font-size:13px">' + i.icon + '</span>' +
+      '<span style="font-size:11px;color:rgba(245,241,232,0.7);flex:1">' + i.text + '</span>' +
+      '<span style="font-size:10px;color:var(--gold)">→</span>' +
+    '</div>';
+  }).join('');
+}
+
+function renderFunnel() {
+  var el = document.getElementById('funnel-view');
+  if (!el) return;
+  var stages = [
+    {name:'Lead',count:8,val:'$124K',c:'var(--muted)'},
+    {name:'Qualified',count:6,val:'$218K',c:'#93c5fd'},
+    {name:'Proposal',count:7,val:'$356K',c:'var(--gold)'},
+    {name:'Negotiation',count:5,val:'$280K',c:'#c4b5fd'},
+    {name:'Won',count:6,val:'$306K',c:'#34D399'},
+  ];
+  var total = 32;
+  el.innerHTML = stages.map(function(s) {
+    var pct = Math.max(15, Math.round((s.count / total) * 100));
+    return '<div style="margin-bottom:7px">' +
+      '<div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:3px">' +
+        '<span style="color:var(--muted)">' + s.name + '</span>' +
+        '<span style="color:' + s.c + ';font-weight:700">' + s.count + ' · ' + s.val + '</span>' +
+      '</div>' +
+      '<div class="progress"><div class="progress-fill" style="width:' + pct + '%;background:' + s.c + '"></div></div>' +
+    '</div>';
+  }).join('');
+}
+
+function renderRevChart() {
+  var ctx = document.getElementById('revChart');
+  if (!ctx) return;
+  if (state.charts.rev) { state.charts.rev.destroy(); }
+  state.charts.rev = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: ['Aug','Sep','Oct','Nov','Dec','Jan'],
+      datasets: [{
+        data: [180,210,195,248,265,284],
+        borderColor: '#C8A96B',
+        backgroundColor: 'rgba(200,169,107,0.06)',
+        borderWidth: 2,
+        fill: true,
+        tension: 0.4,
+        pointBackgroundColor: '#C8A96B',
+        pointRadius: 4,
+        pointHoverRadius: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: 'rgba(10,10,10,0.95)',
+          borderColor: 'rgba(200,169,107,0.3)',
+          borderWidth: 1,
+          titleColor: '#C8A96B',
+          bodyColor: '#a8a8a8',
+          callbacks: { label: function(c) { return '$' + c.parsed.y + 'K'; } }
+        }
+      },
+      scales: {
+        x: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: 'rgba(168,168,168,0.7)', font: { size: 10 } } },
+        y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: 'rgba(168,168,168,0.7)', font: { size: 10 }, callback: function(v) { return '$' + v + 'K'; } } }
+      }
+    }
+  });
+}
+
+// ─ CONTACTS ──────────────────────────────
+function renderContacts() {
+  state.filteredContacts = state.contacts;
+  renderContactsTable();
+}
+
+function renderContactsTable() {
+  var tbody = document.getElementById('contacts-tbody');
+  if (!tbody) return;
+  var list = state.filteredContacts || state.contacts;
+  tbody.innerHTML = list.map(function(c) {
+    var typeC = c.type === 'client' ? 'b-green' : c.type === 'prospect' ? 'b-gold' : 'b-blue';
+    var statC = c.status === 'active' ? 'dot-green' : 'dot-gray';
+    var valTxt = c.val > 0 ? ('$' + (c.val/1000).toFixed(0) + 'K') : '—';
+    return '<tr onclick="openDrawer(' + c.id + ')">' +
+      '<td><div style="display:flex;align-items:center;gap:8px">' +
+        '<div class="av av-sm ' + c.av + '">' + c.init + '</div>' +
+        '<div><div style="font-size:12px;font-weight:600;color:var(--ivory)">' + c.name + '</div>' +
+        '<div style="font-size:10px;color:var(--muted)">' + c.email + '</div></div>' +
+      '</div></td>' +
+      '<td style="font-size:12px">' + c.co + '</td>' +
+      '<td><span class="badge ' + typeC + '">' + c.type + '</span></td>' +
+      '<td><div style="display:flex;align-items:center;gap:6px"><div class="dot ' + statC + '"></div><span style="font-size:11px">' + c.status + (c.tier === 'vip' ? ' · VIP' : '') + '</span></div></td>' +
+      '<td style="color:var(--gold);font-weight:700;font-size:12px;font-family:monospace">' + valTxt + '</td>' +
+      '<td style="font-size:11px;color:var(--muted)">' + c.last + '</td>' +
+      '<td><div style="display:flex;gap:4px">' + c.tags.slice(0,2).map(function(t) { return '<span class="tag">' + t + '</span>'; }).join('') + '</div></td>' +
+      '<td onclick="event.stopPropagation()"><div class="row-actions">' +
+        '<div class="act-btn" title="Message">💬</div>' +
+        '<div class="act-btn" title="AI" onclick="toggleAI()">🤖</div>' +
+        '<div class="act-btn" title="More">⋮</div>' +
+      '</div></td>' +
+    '</tr>';
+  }).join('');
+}
+
+function filterContacts(q) {
+  var query = q.toLowerCase();
+  state.filteredContacts = state.contacts.filter(function(c) {
+    return c.name.toLowerCase().includes(query) ||
+      c.co.toLowerCase().includes(query) ||
+      c.email.toLowerCase().includes(query);
+  });
+  renderContactsTable();
+  var lbl = document.getElementById('contacts-count-label');
+  if (lbl) lbl.textContent = state.filteredContacts.length + ' contacts';
+}
+
+function filterByType(type) {
+  state.filteredContacts = type ? state.contacts.filter(function(c) { return c.type === type; }) : state.contacts;
+  renderContactsTable();
+}
+
+function setView(v) {
+  showToast(v === 'grid' ? 'Card view activated' : 'List view activated');
+}
+
+// ─ CONTACT DRAWER ────────────────────────
+function openDrawer(id) {
+  var c = state.contacts.find(function(x) { return x.id === id; });
+  if (!c) return;
+  state.drawerContact = c;
+
+  // Update header
+  var avEl = document.getElementById('d-av');
+  if (avEl) { avEl.textContent = c.init; avEl.className = 'av av-xl ' + c.av; }
+  var nameEl = document.getElementById('d-name');
+  if (nameEl) nameEl.textContent = c.name;
+  var stEl = document.getElementById('d-status');
+  if (stEl) stEl.textContent = c.status === 'active' ? 'Active ' + c.type : 'Inactive';
+  var tierEl = document.getElementById('d-tier');
+  if (tierEl) tierEl.textContent = c.tier.toUpperCase();
+
+  // Render overview tab
+  renderDrawerOverview(c);
+  renderDrawerTimeline(c);
+  renderDrawerDeals(c);
+
+  document.getElementById('contact-drawer').classList.add('open');
+  document.getElementById('drawer-overlay').style.display = 'block';
+}
+
+function closeDrawer() {
+  document.getElementById('contact-drawer').classList.remove('open');
+  document.getElementById('drawer-overlay').style.display = 'none';
+}
+
+function renderDrawerOverview(c) {
+  var el = document.getElementById('dtab-overview');
+  if (!el) return;
+  el.innerHTML =
+    '<div class="grid2 gap-2 mb-3">' +
+      '<div class="card p-3" style="text-align:center"><div class="text-xl font-bold text-gold">$' + (c.val/1000).toFixed(0) + 'K</div><div class="text-xs text-muted">Total value</div></div>' +
+      '<div class="card p-3" style="text-align:center"><div class="text-xl font-bold">' + c.deals + '</div><div class="text-xs text-muted">Active deals</div></div>' +
+    '</div>' +
+    '<div style="margin-bottom:14px">' +
+      '<div class="text-xs text-muted upper tracking-wider mb-2">Contact Info</div>' +
+      '<div style="display:flex;flex-direction:column;gap:7px">' +
+        '<div style="display:flex;align-items:center;gap:8px;font-size:12px"><span>📧</span>' + c.email + '</div>' +
+        '<div style="display:flex;align-items:center;gap:8px;font-size:12px"><span>📞</span>' + c.phone + '</div>' +
+        '<div style="display:flex;align-items:center;gap:8px;font-size:12px"><span>📍</span>' + c.loc + '</div>' +
+        '<div style="display:flex;align-items:center;gap:8px;font-size:12px"><span>🔗</span>' + c.src + '</div>' +
+      '</div>' +
+    '</div>' +
+    '<div class="divider"></div>' +
+    '<div style="margin-top:10px">' +
+      '<div class="text-xs text-muted upper tracking-wider mb-2">Tags</div>' +
+      '<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px">' + c.tags.map(function(t) { return '<span class="tag">' + t + '</span>'; }).join('') + '</div>' +
+      '<div class="text-xs text-muted upper tracking-wider mb-2">Notes</div>' +
+      '<div style="font-size:12px;color:rgba(245,241,232,0.6);line-height:1.6">' + c.notes + '</div>' +
+    '</div>';
+}
+
+function renderDrawerTimeline(c) {
+  var el = document.getElementById('dtab-timeline');
+  if (!el) return;
+  var events = [
+    {icon:'💬',bg:'rgba(147,197,253,0.12)',title:'Sent follow-up message',meta:'Re: Escritura status · 2h ago'},
+    {icon:'📅',bg:'rgba(200,169,107,0.12)',title:'Appointment scheduled',meta:'Notarial consultation · Jan 9 · Yesterday'},
+    {icon:'🔀',bg:'rgba(196,181,253,0.12)',title:'Deal stage updated',meta:'Moved to Negotiation · 3 days ago'},
+    {icon:'📄',bg:'rgba(52,211,153,0.12)',title:'Document sent',meta:'Draft escritura for review · 1 week ago'},
+    {icon:'👤',bg:'rgba(248,113,113,0.12)',title:'Contact created',meta:'Added by Alejandro Rios · 2 months ago'},
+  ];
+  el.innerHTML = '<div class="tl">' + events.map(function(e) {
+    return '<div class="tl-item">' +
+      '<div class="tl-line"></div>' +
+      '<div class="tl-dot" style="background:' + e.bg + '">' + e.icon + '</div>' +
+      '<div class="tl-content"><div class="tl-title">' + e.title + '</div><div class="tl-meta">' + e.meta + '</div></div>' +
+    '</div>';
+  }).join('') + '</div>';
+}
+
+function renderDrawerDeals(c) {
+  var el = document.getElementById('dtab-deals');
+  if (!el) return;
+  var deals = state.pipeline.filter(function(d) { return d.cid === c.id; });
+  var stageColors = {lead:'var(--muted)',qualified:'#93c5fd',proposal:'var(--gold)',negotiation:'#c4b5fd',won:'#34D399',lost:'#f87171'};
+  if (!deals.length) {
+    el.innerHTML = '<div class="empty"><div class="empty-icon">📋</div><div>No deals yet</div></div>';
+    return;
+  }
+  el.innerHTML = deals.map(function(d) {
+    return '<div class="card p-3 mb-2">' +
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">' +
+        '<div style="font-size:12px;font-weight:600">' + d.title + '</div>' +
+        '<span class="badge" style="color:' + (stageColors[d.stage]||'var(--muted)') + ';background:rgba(0,0,0,0.3);border-color:' + (stageColors[d.stage]||'var(--border)') + '">' + d.stage.toUpperCase() + '</span>' +
+      '</div>' +
+      '<div style="display:flex;justify-content:space-between">' +
+        '<span style="color:var(--gold);font-weight:700">$' + d.val.toLocaleString() + '</span>' +
+        '<span style="font-size:10px;color:var(--muted)">' + d.days + ' days open</span>' +
+      '</div>' +
+    '</div>';
+  }).join('') + '<button class="btn btn-ghost btn-sm" style="width:100%;justify-content:center;margin-top:5px" onclick="showModal(\'add-deal\')">+ Add deal</button>';
+}
+
+function switchDTab(tab, el) {
+  document.querySelectorAll('.dtab').forEach(function(t) { t.classList.remove('active'); });
+  el.classList.add('active');
+  ['overview','timeline','deals','docs'].forEach(function(t) {
+    var panel = document.getElementById('dtab-' + t);
+    if (panel) panel.style.display = t === tab ? 'block' : 'none';
+  });
+}
+
+// ─ PIPELINE ──────────────────────────────
+function renderPipeline() {
+  var board = document.getElementById('kanban-board');
+  if (!board) return;
+  var stages = [
+    {id:'lead',name:'Lead',c:'var(--muted)'},
+    {id:'qualified',name:'Qualified',c:'#93c5fd'},
+    {id:'proposal',name:'Proposal',c:'var(--gold)'},
+    {id:'negotiation',name:'Negotiation',c:'#c4b5fd'},
+    {id:'won',name:'Won',c:'#34D399'},
+    {id:'lost',name:'Lost',c:'#f87171'},
+  ];
+  var priColors = {high:'#f87171',medium:'var(--gold)',low:'#93c5fd'};
+  board.innerHTML = stages.map(function(stage) {
+    var deals = state.pipeline.filter(function(d) { return d.stage === stage.id; });
+    var total = deals.reduce(function(s,d) { return s + d.val; }, 0);
+    return '<div class="k-col" ondragover="allowDrop(event)" ondrop="dropCard(event,\'' + stage.id + '\')">' +
+      '<div class="k-head">' +
+        '<div class="k-head-title" style="color:' + stage.c + '">' + stage.name + '</div>' +
+        '<div style="display:flex;align-items:center;gap:6px">' +
+          (total > 0 ? '<span style="font-size:10px;color:var(--gold)">' + (total >= 1000 ? '$' + Math.round(total/1000) + 'K' : '$' + total) + '</span>' : '') +
+          '<span class="k-count badge" style="color:' + stage.c + ';background:' + stage.c.replace(')',',0.12)').replace('var','rgba').replace('#','rgba(') + '">' + deals.length + '</span>' +
+        '</div>' +
+      '</div>' +
+      '<div class="k-body">' +
+        deals.map(function(d) {
+          return '<div class="k-card" draggable="true" id="kc-' + d.id + '" ondragstart="dragCard(event,' + d.id + ')" onclick="openDrawer(' + d.cid + ')">' +
+            '<div class="k-priority" style="background:' + (priColors[d.pri] || 'var(--muted)') + '"></div>' +
+            '<div class="k-title">' + d.title + '</div>' +
+            '<div class="k-company">' + d.co + '</div>' +
+            '<div class="k-footer">' +
+              '<span class="k-value">$' + (d.val >= 1000 ? Math.round(d.val/1000) + 'K' : d.val) + '</span>' +
+              '<span class="k-days">' + d.days + 'd · ' + d.agent + '</span>' +
+            '</div>' +
+          '</div>';
+        }).join('') +
+        '<button class="k-add" onclick="showModal(\'add-deal\')">+ Add deal</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function dragCard(e, id) { state.dragging = id; }
+function allowDrop(e) { e.preventDefault(); }
+function dropCard(e, stage) {
+  e.preventDefault();
+  if (state.dragging === null) return;
+  var deal = state.pipeline.find(function(d) { return d.id === state.dragging; });
+  if (deal) {
+    deal.stage = stage;
+    state.dragging = null;
+    renderPipeline();
+    showToast('Deal moved to ' + stage);
+  }
+}
+
+// ─ TASKS ─────────────────────────────────
+function renderTasks() {
+  var today = '2024-01-08';
+  var overdue = state.tasks.filter(function(t) { return !t.done && t.due < today; });
+  var todayT = state.tasks.filter(function(t) { return !t.done && t.due === today; });
+  var upcoming = state.tasks.filter(function(t) { return !t.done && t.due > today; });
+  var done = state.tasks.filter(function(t) { return t.done; });
+
+  var oCt = document.getElementById('overdue-ct');
+  var tCt = document.getElementById('today-ct');
+  if (oCt) oCt.textContent = overdue.length + ' tasks';
+  if (tCt) tCt.textContent = todayT.length + ' tasks';
+
+  renderTaskList('tasks-overdue', overdue);
+  renderTaskList('tasks-today', todayT);
+  renderTaskList('tasks-upcoming', upcoming);
+  renderTaskList('tasks-done', done.slice(0, 3));
+}
+
+function renderTaskList(elId, tasks) {
+  var el = document.getElementById(elId);
+  if (!el) return;
+  if (!tasks.length) { el.innerHTML = '<div style="font-size:11px;color:var(--muted);padding:8px 12px">None</div>'; return; }
+  el.innerHTML = tasks.map(function(t) {
+    var priBg = t.pri === 'high' ? 'p-high' : t.pri === 'medium' ? 'p-med' : 'p-low';
+    return '<div class="task-item" id="t-' + t.id + '">' +
+      '<div class="p-bar ' + priBg + '"></div>' +
+      '<div class="task-check ' + (t.done ? 'done' : '') + '" onclick="toggleTask(' + t.id + ')">' + (t.done ? '✓' : '') + '</div>' +
+      '<div class="task-title ' + (t.done ? 'done' : '') + '">' + t.title + '</div>' +
+      '<span class="badge" style="font-size:9px;flex-shrink:0">' + t.agent + '</span>' +
+      '<div class="task-due ' + getDueClass(t.due) + '">' + fmtDue(t.due) + '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function getDueClass(d) {
+  var today = '2024-01-08';
+  if (d < today) return 'due-over';
+  if (d === today) return 'due-today';
+  return 'due-soon';
+}
+
+function fmtDue(d) {
+  var today = '2024-01-08';
+  if (d < today) return 'Overdue';
+  if (d === today) return 'Today';
+  return d.slice(5).replace('-', '/');
+}
+
+function toggleTask(id) {
+  var t = state.tasks.find(function(x) { return x.id === id; });
+  if (t) {
+    t.done = !t.done;
+    renderTasks();
+    renderDashTasks();
+    showToast(t.done ? 'Task completed ✓' : 'Task reopened');
+  }
+}
+
+// ─ ANALYTICS ─────────────────────────────
+function renderAnalytics() {
+  renderTeamPerf();
+  renderSrcLegend();
+  setTimeout(function() {
+    renderRevTrend();
+    renderConvChart();
+    renderSrcChart();
+  }, 50);
+}
+
+function renderRevTrend() {
+  var ctx = document.getElementById('revTrend');
+  if (!ctx) return;
+  if (state.charts.revTrend) state.charts.revTrend.destroy();
+  var months = ['Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan'];
+  var data = [120,145,138,162,190,178,180,210,195,248,265,284];
+  state.charts.revTrend = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: months,
+      datasets: [{
+        data: data,
+        backgroundColor: months.map(function(m, i) { return i === 11 ? 'rgba(200,169,107,0.8)' : 'rgba(200,169,107,0.2)'; }),
+        borderColor: 'rgba(200,169,107,0.5)',
+        borderWidth: 1,
+        borderRadius: 3
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { backgroundColor: 'rgba(10,10,10,0.95)', borderColor: 'rgba(200,169,107,0.3)', borderWidth: 1, titleColor: '#C8A96B', bodyColor: '#a8a8a8', callbacks: { label: function(c) { return '$' + c.parsed.y + 'K'; } } } },
+      scales: { x: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: 'rgba(168,168,168,0.7)', font: { size: 9 } } }, y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: 'rgba(168,168,168,0.7)', font: { size: 9 }, callback: function(v) { return '$' + v + 'K'; } } } }
+    }
+  });
+}
+
+function renderConvChart() {
+  var ctx = document.getElementById('convChart');
+  if (!ctx) return;
+  if (state.charts.conv) state.charts.conv.destroy();
+  state.charts.conv = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['Lead','Qualified','Proposal','Negotiation','Won'],
+      datasets: [{
+        data: [100,78,62,44,32],
+        backgroundColor: ['rgba(168,168,168,0.25)','rgba(147,197,253,0.25)','rgba(200,169,107,0.25)','rgba(196,181,253,0.25)','rgba(52,211,153,0.25)'],
+        borderColor: ['#a8a8a8','#93c5fd','#C8A96B','#c4b5fd','#34D399'],
+        borderWidth: 1.5, borderRadius: 3
+      }]
+    },
+    options: {
+      indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: { x: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: 'rgba(168,168,168,0.7)', font: { size: 9 } } }, y: { grid: { display: false }, ticks: { color: 'rgba(168,168,168,0.7)', font: { size: 9 } } } }
+    }
+  });
+}
+
+function renderSrcChart() {
+  var ctx = document.getElementById('sourceChart');
+  if (!ctx) return;
+  if (state.charts.src) state.charts.src.destroy();
+  state.charts.src = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Referral','Website','LinkedIn','Events','Cold','Partners'],
+      datasets: [{ data: [38,22,18,12,6,4], backgroundColor: ['#C8A96Bcc','#93c5fdcc','#c4b5fdcc','#34D399cc','#f87171cc','#6ee7b7cc'], borderWidth: 0 }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, cutout: '65%', plugins: { legend: { display: false } } }
+  });
+}
+
+function renderSrcLegend() {
+  var el = document.getElementById('source-leg');
+  if (!el) return;
+  var items = [['Referral','#C8A96B','38%'],['Website','#93c5fd','22%'],['LinkedIn','#c4b5fd','18%'],['Events','#34D399','12%'],['Cold','#f87171','6%']];
+  el.innerHTML = items.map(function(i) {
+    return '<div style="display:flex;align-items:center;gap:7px;margin-bottom:7px">' +
+      '<div style="width:8px;height:8px;border-radius:2px;background:' + i[1] + ';flex-shrink:0"></div>' +
+      '<span style="font-size:11px;color:var(--muted);flex:1">' + i[0] + '</span>' +
+      '<span style="font-size:11px;font-weight:700;color:var(--gold)">' + i[2] + '</span>' +
+    '</div>';
+  }).join('');
+}
+
+function renderTeamPerf() {
+  var el = document.getElementById('team-perf');
+  if (!el) return;
+  el.innerHTML = '<table class="table" style="width:100%"><thead><tr><th>Agent</th><th>Deals</th><th>Revenue</th><th>Performance</th></tr></thead><tbody>' +
+    state.team.map(function(m) {
+      var pct = Math.round(40 + Math.random() * 55);
+      return '<tr>' +
+        '<td><div style="display:flex;align-items:center;gap:7px"><div class="av av-sm ' + m.av + '">' + m.init + '</div><div><div style="font-size:11px;font-weight:600">' + m.name.split(' ')[0] + ' ' + m.name.split(' ')[1] + '</div><div style="font-size:10px;color:var(--muted)">' + m.role + '</div></div></div></td>' +
+        '<td style="font-size:12px">' + m.deals + '</td>' +
+        '<td style="color:var(--gold);font-weight:700;font-size:11px">$' + Math.round(m.rev/1000) + 'K</td>' +
+        '<td style="width:80px"><div class="progress"><div class="progress-fill p-gold" style="width:' + pct + '%"></div></div></td>' +
+      '</tr>';
+    }).join('') + '</tbody></table>';
+}
+
+// ─ MESSAGES ──────────────────────────────
+function renderMessages() {
+  var convs = [
+    {init:'MG',av:'av-gold',name:'María González',preview:'¿Cuándo está lista la escritura?',time:'5h',unread:2,online:true},
+    {init:'TN',av:'av-ruby',name:'Team · Notaría',preview:'Alejandro: Mañana tenemos firma',time:'2h',unread:1,online:true},
+    {init:'HM',av:'av-blue',name:'Héctor Morales',preview:'Confirmado para el jueves.',time:'1d',unread:0,online:false},
+    {init:'CV',av:'av-green',name:'Carmen Vargas',preview:'Ya envié la propuesta',time:'3h',unread:0,online:true},
+    {init:'VC',av:'av-purple',name:'Valentina Cruz',preview:'Necesito el trust urgente',time:'2d',unread:0,online:false},
+  ];
+  var list = document.getElementById('conv-list');
+  if (list) {
+    list.innerHTML = convs.map(function(c, i) {
+      return '<div style="display:flex;align-items:center;gap:8px;padding:10px 12px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.03);background:' + (i===0?'rgba(200,169,107,0.04)':'transparent') + '" onclick="showToast(\'Opening conversation with \'+\'' + c.name + '\')">' +
+        '<div style="position:relative">' +
+          '<div class="av av-sm ' + c.av + '">' + c.init + '</div>' +
+          '<div class="dot ' + (c.online ? 'dot-green' : 'dot-gray') + '" style="position:absolute;bottom:0;right:0;width:6px;height:6px;border:1px solid var(--black)"></div>' +
+        '</div>' +
+        '<div style="flex:1;min-width:0">' +
+          '<div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + c.name + '</span><span style="font-size:10px;color:var(--muted);flex-shrink:0">' + c.time + '</span></div>' +
+          '<div style="font-size:11px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + c.preview + '</div>' +
+        '</div>' +
+        (c.unread ? '<span class="badge b-gold" style="font-size:9px;padding:1px 5px">' + c.unread + '</span>' : '') +
+      '</div>';
+    }).join('');
+  }
+
+  var thread = document.getElementById('msg-thread');
+  if (thread) {
+    var msgs = [
+      {from:'client',text:'Buenas tardes Lic. Rios, ¿cuándo está lista mi escritura?',time:'5:12 PM'},
+      {from:'me',text:'Buenas tardes Sra. González. Estamos en revisión final. Lista para el miércoles 10 de enero.', time:'5:28 PM'},
+      {from:'client',text:'Perfecto, ¿puede ser a las 10 AM?',time:'5:31 PM'},
+      {from:'me',text:'Sí, quedamos el miércoles 10 a las 10:00 AM. Le enviaré confirmación por email.',time:'5:45 PM'},
+      {from:'client',text:'¿Cuándo está lista la escritura?',time:'Just now'},
+    ];
+    thread.innerHTML = msgs.map(function(m) {
+      var isMe = m.from === 'me';
+      return '<div style="display:flex;justify-content:' + (isMe ? 'flex-end' : 'flex-start') + '">' +
+        '<div style="max-width:75%">' +
+          '<div style="padding:9px 13px;border-radius:' + (isMe ? '14px 14px 4px 14px' : '14px 14px 14px 4px') + ';background:' + (isMe ? 'rgba(200,169,107,0.14)' : 'rgba(255,255,255,0.05)') + ';border:1px solid ' + (isMe ? 'rgba(200,169,107,0.3)' : 'rgba(255,255,255,0.07)') + ';font-size:12px;line-height:1.5">' + m.text + '</div>' +
+          '<div style="font-size:10px;color:rgba(255,255,255,0.25);margin-top:3px;' + (isMe ? 'text-align:right' : '') + '">' + m.time + '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+}
+
+// ─ DOCUMENTS ─────────────────────────────
+function renderDocs() {
+  var tbody = document.getElementById('docs-tbody');
+  if (!tbody) return;
+  var icons = {Escrituras:'📜','Poderes Notariales':'⚡',Contratos:'📋',Actas:'📄',Invoices:'💰'};
+  var stColors = {signed:'b-green',draft:'b-gray',review:'b-gold',paid:'b-blue'};
+  tbody.innerHTML = state.docs.map(function(d) {
+    return '<tr>' +
+      '<td><div style="display:flex;align-items:center;gap:8px"><span style="font-size:15px">' + (icons[d.cat] || '📄') + '</span><span style="font-size:12px;font-weight:500">' + d.name + '</span></div></td>' +
+      '<td><span class="badge b-gold" style="font-size:9px">' + d.cat + '</span></td>' +
+      '<td style="font-size:12px;color:var(--muted)">' + d.client + '</td>' +
+      '<td style="font-size:11px;color:var(--muted);font-family:monospace">' + d.size + '</td>' +
+      '<td style="font-size:11px;color:var(--muted)">' + d.mod + '</td>' +
+      '<td><span class="badge ' + (stColors[d.status] || 'b-gray') + '">' + d.status.toUpperCase() + '</span></td>' +
+      '<td><div class="row-actions"><div class="act-btn">👁</div><div class="act-btn">⬇</div><div class="act-btn">⋮</div></div></td>' +
+    '</tr>';
+  }).join('');
+}
+
+// ─ BOOKINGS ──────────────────────────────
+function renderBookings() {
+  var tbody = document.getElementById('bookings-tbody');
+  if (!tbody) return;
+  tbody.innerHTML = state.bookings.map(function(b) {
+    return '<tr>' +
+      '<td style="font-size:12px;font-weight:600">' + b.client + '</td>' +
+      '<td style="font-size:12px">' + b.service + '</td>' +
+      '<td style="font-size:11px;font-family:monospace;color:var(--muted)">' + b.dt + '</td>' +
+      '<td style="font-size:11px;color:var(--muted)">' + b.dur + '</td>' +
+      '<td style="font-size:12px">' + b.agent + '</td>' +
+      '<td><span class="badge ' + (b.status === 'confirmed' ? 'b-green' : 'b-gold') + '">' + b.status.toUpperCase() + '</span></td>' +
+      '<td><div class="row-actions"><div class="act-btn">✏️</div><div class="act-btn">❌</div></div></td>' +
+    '</tr>';
+  }).join('');
+}
+
+// ─ AUTOMATIONS ───────────────────────────
+function renderAutomations() {
+  var el = document.getElementById('automations-list');
+  if (!el) return;
+  var autos = [
+    {name:'New lead follow-up',trigger:'Contact created with type=prospect',actions:'Send welcome email → Create task → Notify agent',active:true,runs:47},
+    {name:'Deal won celebration',trigger:'Deal stage changed to Closed Won',actions:'Send congratulations email → Log revenue → Schedule review',active:true,runs:18},
+    {name:'Overdue task alert',trigger:'Task due date passed, status=incomplete',actions:'Notify assignee → Escalate to manager (2+ days)',active:true,runs:124},
+    {name:'Appointment reminder',trigger:'24 hours before booking',actions:'Send WhatsApp → Calendar invite → Notify agent',active:false,runs:89},
+    {name:'VIP monthly check-in',trigger:'VIP contact: 30 days since last activity',actions:'AI drafts message → Create follow-up task → Log to CRM',active:true,runs:12},
+  ];
+  el.innerHTML = autos.map(function(a) {
+    return '<div class="card p-4 mb-3" style="' + (a.active ? 'border-color:rgba(52,211,153,0.2)' : '') + '">' +
+      '<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">' +
+        '<div style="width:36px;height:36px;background:' + (a.active ? 'rgba(52,211,153,0.1)' : 'rgba(168,168,168,0.06)') + ';border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px">' + (a.active ? '⚡' : '⏸') + '</div>' +
+        '<div style="flex:1"><div class="font-semi text-md">' + a.name + '</div><div class="text-xs text-muted">Ran ' + a.runs + ' times · ' + (a.active ? '<span style="color:#34D399">Active</span>' : '<span style="color:var(--muted)">Paused</span>') + '</div></div>' +
+        '<button class="btn ' + (a.active ? 'btn-glass btn-sm' : 'btn-ghost btn-sm') + '" onclick="showToast(\'' + (a.active ? 'Paused' : 'Enabled') + ': ' + a.name + '\')">' + (a.active ? 'Pause' : 'Enable') + '</button>' +
+      '</div>' +
+      '<div style="display:flex;align-items:flex-start;gap:7px;margin-bottom:6px;font-size:11px">' +
+        '<span class="badge b-blue" style="flex-shrink:0">TRIGGER</span>' +
+        '<span style="color:var(--muted)">' + a.trigger + '</span>' +
+      '</div>' +
+      '<div style="display:flex;align-items:flex-start;gap:7px;font-size:11px">' +
+        '<span class="badge b-gold" style="flex-shrink:0">ACTIONS</span>' +
+        '<span style="color:var(--muted)">' + a.actions + '</span>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+// ─ AI CENTER ─────────────────────────────
+function renderAI() {
+  var mods = document.getElementById('ai-modules');
+  if (mods) {
+    var items = [{n:'CRM AI',s:'active',i:'🧠'},{n:'Legal AI',s:'active',i:'⚖️'},{n:'Property AI',s:'active',i:'🏘️'},{n:'Sales AI',s:'active',i:'📈'},{n:'Voice AI',s:'configured',i:'🎙️'},{n:'Doc AI',s:'beta',i:'📄'}];
+    mods.innerHTML = items.map(function(m) {
+      return '<div class="card p-3" style="text-align:center">' +
+        '<div style="font-size:20px;margin-bottom:4px">' + m.i + '</div>' +
+        '<div style="font-size:10px;font-weight:600">' + m.n + '</div>' +
+        '<span class="badge ' + (m.s === 'active' ? 'b-green' : m.s === 'configured' ? 'b-gold' : 'b-blue') + '" style="font-size:8px;margin-top:4px">' + m.s + '</span>' +
+      '</div>';
+    }).join('');
+  }
+
+  var stats = document.getElementById('ai-stats');
+  if (stats) {
+    var rows = [['Queries today','247','b-gold'],['Avg response','1.2s','b-green'],['Context tokens','84K','b-blue'],['Actions auto','18','b-green']];
+    stats.innerHTML = rows.map(function(r) {
+      return '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid var(--border)">' +
+        '<span style="font-size:11px;color:var(--muted)">' + r[0] + '</span>' +
+        '<span class="badge ' + r[2] + '" style="font-size:10px">' + r[1] + '</span>' +
+      '</div>';
+    }).join('');
+  }
+
+  var feats = {
+    'legal-feats': ['Contract analysis & review','Notarial document drafting','Legal term extraction','Compliance checking'],
+    'prop-feats': ['Property valuation AI','Lease analysis','Tenant screening','Market trend analysis'],
+    'sales-feats': ['Lead scoring','Deal forecasting','Email personalization','Revenue prediction'],
+  };
+  Object.keys(feats).forEach(function(id) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.innerHTML = feats[id].map(function(f) {
+      return '<div style="display:flex;align-items:center;gap:7px;margin-bottom:7px;font-size:11px"><span style="color:#34D399">✓</span><span style="color:var(--muted)">' + f + '</span></div>';
+    }).join('');
+  });
+
+  setTimeout(function() {
+    var ctx = document.getElementById('aiUsage');
+    if (!ctx || state.charts.aiUsage) return;
+    state.charts.aiUsage = new Chart(ctx, {
+      type: 'line',
+      data: { labels: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'], datasets: [{ data: [180,220,195,248,265,120,247], borderColor: 'rgba(200,169,107,0.8)', backgroundColor: 'rgba(200,169,107,0.06)', borderWidth: 2, fill: true, tension: 0.4, pointRadius: 3, pointBackgroundColor: '#C8A96B' }] },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: 'rgba(168,168,168,0.6)', font: { size: 9 } } }, y: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: 'rgba(168,168,168,0.6)', font: { size: 9 } } } } }
+    });
+  }, 50);
+}
+
+// ─ TEAM ──────────────────────────────────
+function renderTeam() {
+  var el = document.getElementById('team-grid');
+  if (!el) return;
+  el.innerHTML = state.team.map(function(m, idx) {
+    var fn = m.name.split(' ')[0];
+    return '<div class="card card-hover p-5">' +
+      '<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">' +
+        '<div class="av av-lg ' + m.av + '">' + m.init + '</div>' +
+        '<div><div class="font-semi text-md">' + m.name + '</div><div class="text-xs text-muted">' + m.role + '</div><span class="badge b-gold" style="font-size:9px;margin-top:3px">' + m.dept + '</span></div>' +
+        '<div class="dot dot-green" style="margin-left:auto"></div>' +
+      '</div>' +
+      '<div class="grid3 gap-2 mb-3">' +
+        '<div style="text-align:center"><div class="text-lg font-bold text-gold">' + m.deals + '</div><div class="text-xs text-muted">Deals</div></div>' +
+        '<div style="text-align:center"><div class="text-lg font-bold">$' + Math.round(m.rev/1000) + 'K</div><div class="text-xs text-muted">Revenue</div></div>' +
+        '<div style="text-align:center"><div class="text-lg font-bold">' + m.tasks + '</div><div class="text-xs text-muted">Tasks</div></div>' +
+      '</div>' +
+      '<div style="display:flex;gap:6px">' +
+        '<button class="btn btn-glass btn-sm" style="flex:1;justify-content:center" onclick="teamAction(' + idx + ',0)">💬 Message</button>' +
+        '<button class="btn btn-glass btn-sm" style="flex:1;justify-content:center" onclick="teamAction(' + idx + ',1)">📊 Report</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+// ─ SETTINGS ──────────────────────────────
+function renderSettings() {
+  var navEl = document.getElementById('settings-nav');
+  if (!navEl) return;
+  var items = ['Organization','Users & Roles','Pipeline config','Integrations','AI settings','Notifications','Billing','Security'];
+  navEl.innerHTML = items.map(function(item, i) {
+    return '<div style="padding:8px 10px;border-radius:var(--r);cursor:pointer;font-size:12px;margin-bottom:2px;' + (i === 0 ? 'background:rgba(200,169,107,0.08);color:var(--gold);font-weight:600' : 'color:var(--muted)') + '" onclick="showToast(this.textContent)">' + item + '</div>';
+  }).join('');
+}
+
+// ─ NOTIFICATIONS ─────────────────────────
+function renderNotifications() {
+  var el = document.getElementById('notif-list');
+  if (!el) return;
+  el.innerHTML = state.notifications.map(function(n) {
+    return '<div class="notif-item ' + (n.read ? '' : 'unread') + '" onclick="showToast(\'' + n.title + '\')">' +
+      '<div class="notif-ndot ' + (n.read ? 'read' : '') + '"></div>' +
+      '<div style="flex:1">' +
+        '<div style="font-size:12px;font-weight:600">' + n.title + '</div>' +
+        '<div style="font-size:11px;color:var(--muted)">' + n.body + '</div>' +
+        '<div style="font-size:10px;color:rgba(255,255,255,0.25);margin-top:2px">' + n.time + '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('') + '<div style="padding:8px 12px;text-align:center"><button class="btn btn-glass btn-sm" onclick="closeNotifs()">Close</button></div>';
+}
+
+function toggleNotifs() {
+  var panel = document.getElementById('notif-panel');
+  panel.classList.toggle('open');
+}
+
+function closeNotifs() {
+  document.getElementById('notif-panel').classList.remove('open');
+}
+
+function markAllRead() {
+  state.notifications.forEach(function(n) { n.read = true; });
+  renderNotifications();
+  showToast('All notifications marked as read');
+}
+
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('#notif-toggle') && !e.target.closest('#notif-panel')) {
+    document.getElementById('notif-panel').classList.remove('open');
+  }
+});
+
+// ─ AI PANEL ──────────────────────────────
+function initAI() {
+  renderAIMessages();
+  setAIChips();
+}
+
+function toggleAI() {
+  state.aiOpen = !state.aiOpen;
+  var panel = document.getElementById('ai-panel');
+  panel.classList.toggle('open', state.aiOpen);
+  var btn = document.getElementById('ai-toggle-btn');
+  btn.classList.toggle('active', state.aiOpen);
+  if (state.aiOpen) { renderAIMessages(); setAIChips(); }
+}
+
+function setAIMode(btn) {
+  document.querySelectorAll('.ai-mode').forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+}
+
+function setAIChips() {
+  var el = document.getElementById('ai-chips');
+  if (!el) return;
+  var chips = ['Summarize pipeline','Draft follow-up','At-risk deals','Revenue forecast','Overdue tasks'];
+  el.innerHTML = chips.map(function(c) {
+    return '<button class="ai-chip" onclick="askAI(\'' + c + '\')">' + c + '</button>';
+  }).join('');
+}
+
+function renderAIMessages() {
+  var el = document.getElementById('ai-msg-list');
+  if (!el) return;
+  el.innerHTML = state.aiMessages.map(function(m) {
+    return '<div class="ai-msg ' + m.role + '">' +
+      '<div class="ai-bubble">' + m.text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>') + '</div>' +
+    '</div>';
+  }).join('');
+  el.scrollTop = el.scrollHeight;
+}
+
+var aiResponses = {
+  pipeline: 'Based on your pipeline:\n\n📊 **32 active deals** worth **$1.28M**\n\n🔴 **At risk:** Subdivisión Terreno SJC (21 days, no contact). Recommend immediate follow-up with Roberto Jiménez.\n\n✅ **Close-ready:** Cruz Family Trust and Escritura Pedregal in final negotiation. Probability: 85%.\n\n💡 **Action:** Schedule signing ceremony with Héctor Morales this week.',
+  followup: 'Contacts needing follow-up today:\n\n1. **Héctor Morales** — Escritura Pedregal in negotiation. Send status update.\n2. **Carlos Martínez** — 2 days no contact. Proposal pending. Call recommended.\n3. **Juan Pablo Reyes** — New lead, zero contact. Qualify immediately.\n4. **María González** — Waiting for escritura status reply.',
+  draft: 'Draft email for María González:\n\n---\nEstimada Sra. González,\n\nEspero que se encuentre bien. Me comunico para informarle que su escritura está en revisión final. Estimamos tenerla lista para firma el **miércoles 10 de enero** a las 10:00 AM.\n\n¿Le parece conveniente esa fecha?\n\nLic. Alejandro Rios García\nNotaría Pública 322\n---',
+  revenue: 'Revenue forecast for Q1 2024:\n\n📈 **Projected: $910K** (based on pipeline × win rate)\n\n**Pipeline breakdown:**\n- Deals in negotiation: $375K (85% close probability)\n- Deals in proposal: $226K (55% close probability)\n- Deals in qualified: $256K (35% close probability)\n\n💡 Focus on closing the 5 negotiation-stage deals for maximum Q1 impact.',
+  default: 'I can help with that! Based on your CRM data, would you like me to:\n\n• Analyze specific deals or contacts\n• Draft client communications\n• Generate a pipeline report\n• Identify follow-up opportunities\n\nJust ask me anything about your business!'
+};
+
+function getAIResponse(msg) {
+  var m = msg.toLowerCase();
+  if (m.includes('pipeline') || m.includes('deal') || m.includes('summarize')) return aiResponses.pipeline;
+  if (m.includes('follow') || m.includes('contact') || m.includes('reach')) return aiResponses.followup;
+  if (m.includes('draft') || m.includes('email') || m.includes('message') || m.includes('write')) return aiResponses.draft;
+  if (m.includes('revenue') || m.includes('forecast') || m.includes('prediction')) return aiResponses.revenue;
+  return aiResponses.default;
+}
+
+function askAI(msg) {
+  if (!state.aiOpen) toggleAI();
+  state.aiMessages.push({role:'user', text:msg});
+  renderAIMessages();
+  setTimeout(function() {
+    state.aiMessages.push({role:'bot', text:getAIResponse(msg)});
+    renderAIMessages();
+  }, 600 + Math.random() * 500);
+}
+
+function sendAI() {
+  var ta = document.getElementById('ai-input');
+  if (!ta || !ta.value.trim()) return;
+  var msg = ta.value.trim();
+  ta.value = '';
+  ta.style.height = 'auto';
+  askAI(msg);
+}
+
+function aiKeyDown(e) {
+  if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+    e.preventDefault();
+    sendAI();
+  }
+}
+
+// ─ MODAL ─────────────────────────────────
+var modalDefs = {
+  'add-contact': {
+    title: 'Add New Contact',
+    sub: 'Create a new contact in AETHERION CRM',
+    body: function() {
+      return '<div class="input-row">' +
+        '<div class="input-group"><label>First Name</label><input class="input" placeholder="First name"/></div>' +
+        '<div class="input-group"><label>Last Name</label><input class="input" placeholder="Last name"/></div>' +
+        '</div>' +
+        '<div class="input-row">' +
+        '<div class="input-group"><label>Email</label><input class="input" type="email" placeholder="email@company.com"/></div>' +
+        '<div class="input-group"><label>Phone</label><input class="input" placeholder="+52 624..."/></div>' +
+        '</div>' +
+        '<div class="input-row">' +
+        '<div class="input-group"><label>Company</label><input class="input" placeholder="Company name"/></div>' +
+        '<div class="input-group"><label>Type</label><select class="select"><option>Client</option><option>Prospect</option><option>Vendor</option><option>Partner</option></select></div>' +
+        '</div>' +
+        '<div class="input-group"><label>Notes</label><textarea class="input" rows="2" placeholder="Initial notes..." style="resize:vertical"></textarea></div>';
+    }
+  },
+  'add-deal': {
+    title: 'New Deal',
+    sub: 'Add a deal to your pipeline',
+    body: function() {
+      return '<div class="input-group"><label>Deal Title</label><input class="input" placeholder="e.g. Escritura Casa Palmilla"/></div>' +
+        '<div class="input-group"><label>Contact</label><select class="select"><option>Select contact...</option>' +
+        state.contacts.map(function(c) { return '<option>' + c.name + '</option>'; }).join('') +
+        '</select></div>' +
+        '<div class="input-row">' +
+        '<div class="input-group"><label>Value ($)</label><input class="input" type="number" placeholder="0"/></div>' +
+        '<div class="input-group"><label>Stage</label><select class="select"><option value="lead">Lead</option><option value="qualified">Qualified</option><option value="proposal">Proposal</option><option value="negotiation">Negotiation</option></select></div>' +
+        '</div>' +
+        '<div class="input-row">' +
+        '<div class="input-group"><label>Priority</label><select class="select"><option>High</option><option>Medium</option><option>Low</option></select></div>' +
+        '<div class="input-group"><label>Assigned to</label><select class="select">' +
+        state.team.map(function(t) { return '<option>' + t.init + ' — ' + t.name.split(' ')[0] + '</option>'; }).join('') +
+        '</select></div>' +
+        '</div>' +
+        '<div class="input-group"><label>Notes</label><textarea class="input" rows="2" placeholder="Deal notes..." style="resize:vertical"></textarea></div>';
+    }
+  },
+  'add-task': {
+    title: 'Add Task',
+    sub: 'Create a task or reminder',
+    body: function() {
+      return '<div class="input-group"><label>Task title</label><input class="input" placeholder="What needs to be done?"/></div>' +
+        '<div class="input-row">' +
+        '<div class="input-group"><label>Priority</label><select class="select"><option>High</option><option>Medium</option><option>Low</option></select></div>' +
+        '<div class="input-group"><label>Due date</label><input class="input" type="date"/></div>' +
+        '</div>' +
+        '<div class="input-row">' +
+        '<div class="input-group"><label>Assign to</label><select class="select">' +
+        state.team.map(function(t) { return '<option>' + t.name.split(' ')[0] + '</option>'; }).join('') +
+        '</select></div>' +
+        '<div class="input-group"><label>Related contact</label><select class="select"><option>None</option>' +
+        state.contacts.map(function(c) { return '<option>' + c.name + '</option>'; }).join('') +
+        '</select></div>' +
+        '</div>';
+    }
+  },
+  'add-booking': {
+    title: 'New Booking',
+    sub: 'Schedule an appointment',
+    body: function() {
+      return '<div class="input-group"><label>Client</label><select class="select"><option>Select client...</option>' +
+        state.contacts.map(function(c) { return '<option>' + c.name + '</option>'; }).join('') +
+        '</select></div>' +
+        '<div class="input-group"><label>Service type</label><select class="select"><option>Notarial consultation</option><option>Escritura signing</option><option>Power of attorney</option><option>Contract review</option><option>Property viewing</option></select></div>' +
+        '<div class="input-row">' +
+        '<div class="input-group"><label>Date</label><input class="input" type="date"/></div>' +
+        '<div class="input-group"><label>Time</label><input class="input" type="time"/></div>' +
+        '</div>' +
+        '<div class="input-row">' +
+        '<div class="input-group"><label>Duration</label><select class="select"><option>30 min</option><option>45 min</option><option>60 min</option><option>90 min</option></select></div>' +
+        '<div class="input-group"><label>Agent</label><select class="select">' +
+        state.team.map(function(t) { return '<option>' + t.name.split(' ')[0] + '</option>'; }).join('') +
+        '</select></div>' +
+        '</div>';
+    }
+  }
+};
+
+function showModal(type) {
+  var def = modalDefs[type];
+  if (!def) return;
+  var box = document.getElementById('modal-box');
+  box.innerHTML =
+    '<div class="modal-x" onclick="closeModal()">✕</div>' +
+    '<div class="modal-title">' + def.title + '</div>' +
+    '<div class="modal-sub">' + def.sub + '</div>' +
+    def.body() +
+    '<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px;padding-top:14px;border-top:1px solid var(--border)">' +
+      '<button class="btn btn-glass" onclick="closeModal()">Cancel</button>' +
+      '<button class="btn btn-gold" onclick="closeModal();showToast(\'Saved successfully ✓\')">💾 Save</button>' +
+    '</div>';
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+}
+
+function closeModalOnBg(e) {
+  if (e.target === document.getElementById('modal-overlay')) closeModal();
+}
+
+// ─ SEARCH ────────────────────────────────
+function doSearch(q) {
+  if (q.length < 2) return;
+  var results = state.contacts.filter(function(c) {
+    return c.name.toLowerCase().includes(q.toLowerCase()) || c.co.toLowerCase().includes(q.toLowerCase());
+  });
+  if (results.length) {
+    goPage('contacts');
+    state.filteredContacts = results;
+    renderContactsTable();
+    showToast('Found ' + results.length + ' results for "' + q + '"');
+  }
+}
+
+// ─ TOAST ─────────────────────────────────
+var toastTimer;
+function showToast(msg) {
+  var el = document.getElementById('toast');
+  el.textContent = msg;
+  el.style.display = 'block';
+  el.style.animation = 'fadein .3s ease';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function() { el.style.display = 'none'; }, 3000);
+}
+
+// ─ AUTO RESIZE AI TEXTAREA ───────────────
+document.addEventListener('DOMContentLoaded', function() {
+  var ta = document.getElementById('ai-input');
+  if (ta) {
+    ta.addEventListener('input', function() {
+      this.style.height = 'auto';
+      this.style.height = Math.min(this.scrollHeight, 80) + 'px';
+    });
+  }
+});
+</script>
+</body>
+</html>
